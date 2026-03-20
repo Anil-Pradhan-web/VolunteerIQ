@@ -1,32 +1,71 @@
-# VolunteerIQ
+# 🌍 VolunteerIQ (Solution Challenge 2026)
 
-VolunteerIQ is an AI-powered volunteer coordination platform for NGOs working on disaster relief,
-education, and community support. Day 1 is now scaffolded with a Next.js frontend foundation,
-FastAPI backend structure, rough screen wireframes, and a local branch workflow.
+**VolunteerIQ** is an AI-powered smart resource allocation platform designed for NGOs. It turns scattered field data and community reports into immediate, targeted action through intelligent volunteer coordination. 
 
-## Day 1 Status
+**Focus:** Social Impact & Modern Tech for Good
+**Tech Stack:** Next.js 14, Tailwind CSS, shadcn/ui, FastAPI (Python), Google Gemini, Firebase.
 
-- Frontend App Router structure is ready in [frontend](/c:/Users/ANIL/Desktop/VOLUNTEER%20IQ/frontend)
-- Tailwind and shadcn-style component setup is prepared in [frontend/package.json](/c:/Users/ANIL/Desktop/VOLUNTEER%20IQ/frontend/package.json)
-- FastAPI routes and services are scaffolded in [backend](/c:/Users/ANIL/Desktop/VOLUNTEER%20IQ/backend)
-- Rough wireframes live in [docs/day1-wireframes.md](/c:/Users/ANIL/Desktop/VOLUNTEER%20IQ/docs/day1-wireframes.md)
-- Branch workflow notes live in [docs/day1-branch-strategy.md](/c:/Users/ANIL/Desktop/VOLUNTEER%20IQ/docs/day1-branch-strategy.md)
+---
 
-## Quick Start
+## 🚀 The Fastest Way to Start (If already installed)
 
-Frontend:
+If you have already installed the packages once, you don't need to do it again! 
 
+Simply double-click the **`start.bat`** file in the main folder. 
+- It will automatically launch two terminal windows (one for Next.js, one for FastAPI).
+- Open your browser and go to: **[http://localhost:3000](http://localhost:3000)**
+
+---
+
+## 🛠️ First-Time Setup (For Teammates)
+
+If you just cloned this project on your laptop for the first time, follow these steps to install the required dependencies.
+
+### 1. Prerequisites
+Make sure your laptop has:
+- **Node.js** (v18 or higher)
+- **Python** (v3.9 or higher)
+
+### 2. Install Frontend 🎨
+Open a terminal in the root folder and run:
 ```powershell
 cd frontend
-cmd /c npm install
-cmd /c npm run dev
+npm install
 ```
 
-Backend:
-
+### 3. Install Backend 🧠
+Open a terminal in the root folder and run this to create a virtual environment and install Python packages:
 ```powershell
 cd backend
 python -m venv .venv
-.venv\Scripts\python -m pip install -r requirements.txt
-.venv\Scripts\python -m uvicorn main:app --reload
+.venv\Scripts\activate
+pip install -r requirements.txt
 ```
+
+---
+
+## 🏃 Running Manually (Without `start.bat`)
+
+If you prefer starting servers manually in VS Code terminals:
+
+**Frontend Terminal:**
+```powershell
+cd frontend
+npm run dev
+```
+
+**Backend Terminal:**
+```powershell
+cd backend
+.venv\Scripts\activate
+uvicorn main:app --reload
+```
+
+---
+
+## 📁 What's Inside?
+- `/frontend` - The gorgeous Light-Mode UI built with Next.js App Router.
+- `/backend` - Core API engine powered by FastAPI & Gemini.
+- `execution_plan.md` - Our tracking document for project phases.
+
+> 🎉 **Happy Coding! Let's build something amazing for the Solution Challenge!**
