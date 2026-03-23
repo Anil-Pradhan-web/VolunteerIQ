@@ -9,19 +9,21 @@ import {
   HelpCircle, 
   LayoutDashboard, 
   Settings, 
+  Upload,
   Users2,
-  FileText
+  FileText,
+  UserCircle
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
 const mainNavItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/projects", label: "Projects", icon: Folder },
   { href: "/volunteers", label: "Volunteers", icon: Users2 },
   { href: "/tasks", label: "Tasks", icon: ClipboardList },
+  { href: "/upload", label: "Upload Survey", icon: Upload },
   { href: "/impact", label: "Impact Reports", icon: FileText },
-  { href: "/donations", label: "Donations", icon: HeartHandshake }
+  { href: "/volunteer/profile", label: "My Profile", icon: UserCircle },
 ];
 
 const bottomNavItems = [
