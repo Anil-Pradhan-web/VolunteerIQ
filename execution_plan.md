@@ -41,19 +41,21 @@ An AI-powered volunteer coordination platform where:
 | Frontend | Next.js 14 (App Router) + Tailwind CSS + shadcn/ui |
 | Backend | FastAPI (Python) |
 | AI | Google Gemini 1.5 Pro API |
-| Database | Firebase Firestore |
-| File Storage | Firebase Storage |
-| Authentication | Firebase Auth (Google Login) |
+| Database | **SQLite + SQLAlchemy** (dev) → PostgreSQL (production) |
+| File Storage | **Backend local storage** (uploads saved on server) |
+| Authentication | Firebase Auth (Google Login) — **free tier, no billing** |
 | Frontend Deploy | Vercel |
 | Backend Deploy | Render |
+
+> ⚠️ **Architecture Change (Day 2):** Firebase Firestore and Storage were replaced because they require billing. Now using SQLite (zero-config) for local dev, with SQLAlchemy ORM that can swap to PostgreSQL by changing one env var. Firebase is used **only** for Google Authentication (free tier).
 
 ---
 
 ## 🗂️ Feature List
 
 ### P0 — Must Have (Core MVP)
-- [ ] Google Login (Firebase Auth)
-- [ ] Volunteer registration with skills + availability + location
+- [x] Google Login (Firebase Auth) ✅
+- [x] Volunteer registration with skills + availability + location ✅
 - [ ] NGO admin dashboard
 - [ ] Community data upload (CSV/PDF surveys)
 - [ ] Gemini AI — analyze uploaded data, identify top 3 problem areas
@@ -63,7 +65,7 @@ An AI-powered volunteer coordination platform where:
 - [ ] Basic dashboard — active tasks, volunteers deployed, problems identified
 
 ### P1 — Should Have
-- [ ] Volunteer profile page
+- [x] Volunteer profile page ✅
 - [ ] Task status tracking (Pending / In Progress / Completed)
 - [ ] Gemini chat — ask questions about community data
 - [ ] Email/notification on task assignment
@@ -76,74 +78,89 @@ An AI-powered volunteer coordination platform where:
 
 ---
 
-## 🗄️ Database Schema (Firestore)
+## 🗄️ Database Schema (SQLAlchemy ORM → SQLite / PostgreSQL)
 
-```
-/users/{userId}
-  - name: string
-  - email: string
-  - role: "volunteer" | "ngo_admin"
-  - skills: string[]           // ["medical", "teaching", "driving", "logistics"]
-  - availability: string[]     // ["weekdays", "weekends", "mornings"]
-  - location: string           // "Bhubaneswar, Odisha"
-  - createdAt: timestamp
+```python
+# app/db_models.py
 
-/ngos/{ngoId}
-  - name: string
-  - adminId: string
-  - location: string
-  - createdAt: timestamp
+class User(Base):                        # Table: users
+    id: str (PK)                         # Firebase UID or UUID
+    name: str
+    email: str | None
+    role: "volunteer" | "ngo_admin"
+    skills: JSON list                    # ["Medical", "Teaching", "Driving"]
+    availability: JSON list              # ["Weekdays", "Weekends", "Mornings"]
+    location: str                        # "Bhubaneswar, Odisha"
+    created_at: datetime
 
-/surveys/{surveyId}
-  - ngoId: string
-  - fileName: string
-  - fileUrl: string
-  - uploadedBy: string
-  - analysisResult: {
-      topProblems: string[]    // Gemini output
-      summary: string
-      urgencyScore: number
-    }
-  - createdAt: timestamp
+class Task(Base):                        # Table: tasks
+    id: int (PK, auto)
+    ngo_id: str
+    title: str
+    description: text
+    required_skills: JSON list
+    location: str
+    deadline: datetime | None
+    status: "open" | "assigned" | "completed"
+    assigned_to: JSON list               # volunteer IDs
+    created_at: datetime
 
-/tasks/{taskId}
-  - ngoId: string
-  - title: string
-  - description: string
-  - requiredSkills: string[]
-  - location: string
-  - deadline: timestamp
-  - status: "open" | "assigned" | "completed"
-  - assignedTo: string[]       // volunteer userIds
-  - createdAt: timestamp
+class Assignment(Base):                  # Table: assignments
+    id: int (PK, auto)
+    task_id: FK → tasks.id
+    volunteer_id: FK → users.id
+    assigned_at: datetime
+    status: "active" | "completed"
 
-/assignments/{assignmentId}
-  - taskId: string
-  - volunteerId: string
-  - assignedAt: timestamp
-  - status: "active" | "completed"
+class Survey(Base):                      # Table: surveys
+    id: int (PK, auto)
+    ngo_id: str
+    file_name: str
+    file_path: str                       # Local server path
+    uploaded_by: str
+    extracted_text: text
+    analysis_result: JSON | None         # Gemini output
+    created_at: datetime
 ```
 
 ---
 
-## 🔌 API Endpoints (FastAPI)
+## 🔌 API Endpoints (FastAPI) — ✅ All Implemented
 
 ```
-POST   /api/upload-survey          → Upload CSV/PDF, extract text, send to Gemini
-GET    /api/surveys/{ngoId}        → Get all surveys for an NGO
-GET    /api/analyze/{surveyId}     → Get Gemini analysis for a survey
+# Auth (Firebase token verification)
+POST   /api/auth/verify             → Verify Firebase token, create/fetch user in DB ✅
 
-POST   /api/tasks                  → Create a new task
-GET    /api/tasks/{ngoId}          → Get all tasks for an NGO
-PUT    /api/tasks/{taskId}         → Update task status
+# Surveys
+POST   /api/upload-survey           → Upload CSV/PDF, extract text, save to local storage ✅ (stub)
+GET    /api/surveys/{ngoId}         → Get all surveys for an NGO
+GET    /api/analyze/{surveyId}      → Get Gemini analysis for a survey
 
-POST   /api/match-volunteers       → Gemini powered matching: task → best volunteers
-GET    /api/volunteers             → Get all volunteers with filters (skill, location)
+# Tasks
+POST   /api/tasks                   → Create a new task ✅
+GET    /api/tasks?ngoId=X           → Get all tasks (optional NGO filter) ✅
+GET    /api/tasks/{taskId}          → Get single task ✅
+PUT    /api/tasks/{taskId}          → Update task status ✅
 
-POST   /api/assign                 → Assign volunteer to task
-GET    /api/assignments/{userId}   → Get all assignments for a volunteer
+# Volunteers
+POST   /api/volunteers              → Create volunteer profile ✅
+GET    /api/volunteers?skill=X      → List volunteers (with filters) ✅
+GET    /api/volunteers/{id}         → Get single volunteer ✅
+PUT    /api/volunteers/{id}         → Update volunteer profile ✅
 
-GET    /api/dashboard/{ngoId}      → Dashboard stats (active tasks, volunteers, impact)
+# Matching
+POST   /api/match-volunteers        → Gemini powered matching ✅ (stub)
+
+# Assignments
+POST   /api/assign                  → Assign volunteer to task ✅
+GET    /api/assignments/{userId}    → Get volunteer's assignments ✅
+
+# Dashboard
+GET    /api/dashboard/{ngoId}       → Dashboard stats ✅
+
+# Health
+GET    /                            → Health check ✅
+GET    /health                      → Health check ✅
 ```
 
 ---
@@ -196,64 +213,90 @@ GET    /api/dashboard/{ngoId}      → Dashboard stats (active tasks, volunteers
     dashboard.py
   /services
     gemini.py
+    groq_service.py
     firebase.py
   main.py
   requirements.txt
   .env
   ```
 - [x] Setup virtual environment
-- [x] Install: `fastapi uvicorn python-dotenv firebase-admin google-generativeai pdfplumber python-multipart pandas`
+- [x] Install: `fastapi uvicorn python-dotenv firebase-admin google-generativeai groq pdfplumber python-multipart pandas`
 - [x] Test FastAPI running locally (Added `start.bat` for quick launch)
 
 ---
 
-#### Day 2 — Firebase Setup + Google Auth
+#### Day 2 — Auth + Database Setup + Google Login (✅ COMPLETED)
+
+> ⚠️ **Architecture Change:** Firebase billing was required for Firestore/Storage, so we switched to:
+> - **Database:** SQLite + SQLAlchemy (zero config dev, swap to PostgreSQL for production)
+> - **Storage:** Backend local file storage
+> - **Firebase:** Used ONLY for Google Authentication (free tier)
 
 **Dev 1 (Lead):**
-- Create Firebase project on console.firebase.google.com
-- Enable: Firestore, Storage, Authentication (Google provider)
-- Add Firebase config to Next.js `.env.local`
-- Create `lib/firebase.ts` with init code
-- Implement Google Login page (NextAuth or Firebase directly)
-- Protected route middleware — redirect to login if not authenticated
+- [x] Created Firebase project `volenteeriq` on console.firebase.google.com
+- [x] Enabled Authentication → Google provider (free tier, no billing needed)
+- [x] Added Firebase config to Next.js `.env.local` (all 6 config values)
+- [x] Created `lib/firebase.ts` with full Firebase SDK init + Auth exports
+- [x] Created `lib/auth-context.tsx` — AuthProvider + `useAuth()` hook
+- [x] Implemented Google Login page (`/login`) — beautiful split-screen UI
+- [x] Created `components/auth/protected-route.tsx` — redirect to login if not auth
+- [x] Created `POST /api/auth/verify` route — verifies Firebase token + creates user in DB
 
 **Dev 2 (Frontend):**
-- Build Login page UI — clean, professional
-- Build post-login redirect flow:
-  - If `role === "ngo_admin"` → go to `/dashboard`
-  - If `role === "volunteer"` → go to `/volunteer/profile`
-- Create role selection screen (first time login)
+- [x] Built Login page UI — clean, professional split-screen with Google Sign-In
+- [x] Built post-login redirect flow:
+  - If first login → `/onboarding` (role selection)
+  - If `role === "ngo_admin"` → `/dashboard`
+  - If `role === "volunteer"` → `/dashboard`
+- [x] Created role selection screen (`/onboarding`) — Volunteer vs NGO Admin cards
+- [x] Built Volunteer Profile page (`/volunteer/profile`) — editable skills, availability, location
+- [x] Updated header to show logged-in user name + photo + logout button
+- [x] Updated sidebar navigation — added Upload Survey, My Profile links
 
 **Dev 3 (Backend):**
-- Setup Firebase Admin SDK in FastAPI
-- Create `services/firebase.py`:
-  - `save_user()` — save user to Firestore on first login
+- [x] Created `app/database.py` — SQLAlchemy engine + session (SQLite for dev)
+- [x] Created `app/db_models.py` — ORM models: User, Task, Assignment, Survey
+- [x] Created `services/db_service.py` — full CRUD for all models:
+  - `save_user()` — save user to SQLite DB
   - `get_user()` — fetch user by ID
-  - `update_user()` — update user skills/availability
-- Test Firebase connection from FastAPI
+  - `update_user()` — update user skills/availability/role
+  - `list_volunteers()` — list all volunteers with role filter
+  - `create_task()`, `get_task()`, `list_tasks()`, `update_task()`
+  - `assign_volunteer()`, `get_assignments()`
+  - `save_survey()`, `get_surveys()`, `update_survey_analysis()`
+  - `get_dashboard_stats()` — aggregated stats from DB
+- [x] Created `services/auth.py` — Firebase token verification middleware (free tier)
+- [x] Created `routes/auth.py`, `routes/assignments.py` — new endpoints
+- [x] Updated all routes to use SQLAlchemy sessions via `Depends(get_db)`
+- [x] Tested all API endpoints — all working ✅
+- [x] DB tables auto-create on server startup via `lifespan` event
 
 ---
 
-#### Day 3 — Volunteer Registration + Profile
+#### Day 3 — Volunteer Registration + Profile (✅ PARTIALLY COMPLETED — merged into Day 2)
+
+> **Note:** Most of Day 3 tasks were completed early as part of Day 2.
 
 **Dev 1 (Lead):**
-- Connect frontend Google login to Firestore — save user on first login
-- Create `/api/users` route in Next.js calling FastAPI
-- Test end-to-end: Login → Save to Firestore → Redirect
+- [x] Connected frontend Google login to DB — saves user on first login via `/api/auth/verify`
+- [x] Auth token sent to backend automatically on login
+- [x] End-to-end tested: Login → Save to DB → Redirect based on role
 
 **Dev 2 (Frontend):**
-- Build Volunteer Registration Form:
-  - Name, Location (city)
-  - Skills: multi-select checkboxes (Medical, Teaching, Driving, Logistics, Cooking, Construction, IT Support)
+- [x] Built Volunteer Profile page (`/volunteer/profile`):
+  - Skills: multi-select chips (Medical, Teaching, Driving, Logistics, Cooking, Construction, IT Support, Counseling, Translation, First Aid)
   - Availability: (Weekdays / Weekends / Mornings / Evenings / Full-time)
-- Build Volunteer Profile page showing their info + assigned tasks
+  - Location input
+  - Save button with loading state + success feedback
+- [x] Profile page shows user photo, name, email from Google account
 
 **Dev 3 (Backend):**
-- Create `routes/volunteers.py`:
-  - `POST /api/volunteers` — save volunteer profile
-  - `GET /api/volunteers` — list all volunteers (with optional skill/location filter)
-  - `GET /api/volunteers/{id}` — get single volunteer
-- Test all endpoints with Postman/curl
+- [x] `routes/volunteers.py` fully implemented:
+  - `POST /api/volunteers` — save volunteer profile ✅
+  - `GET /api/volunteers?skill=X&location=Y` — list with filters ✅
+  - `GET /api/volunteers/{id}` — get single volunteer ✅
+  - `PUT /api/volunteers/{id}` — update profile ✅
+- [x] All endpoints tested with curl/Invoke-RestMethod ✅
 
 ---
 
@@ -281,21 +324,21 @@ GET    /api/dashboard/{ngoId}      → Dashboard stats (active tasks, volunteers
 
 **Dev 3 (Backend):**
 - Create `routes/upload.py`:
-  - `POST /api/upload-survey` — receive file, save to Firebase Storage, extract text
+  - `POST /api/upload-survey` — receive file, save to **backend local storage**, extract text
 - Create text extraction logic:
   - PDF → pdfplumber
   - CSV → pandas
   - DOCX → python-docx
-- Save survey metadata to Firestore
+- Save survey metadata to **SQLite DB** via `db_service.save_survey()`
 - Return extracted text to frontend temporarily
 
 ---
 
-#### Day 5 — Gemini AI Analysis
+#### Day 5 — Gemini & Groq AI Analysis
 
 **Dev 1 (Lead):**
 - Connect survey upload response to analysis display
-- Create survey detail page — show Gemini analysis results
+- Create survey detail page — show Gemini/Groq analysis results
 - Handle loading states + error states
 
 **Dev 2 (Frontend):**
@@ -328,7 +371,7 @@ GET    /api/dashboard/{ngoId}      → Dashboard stats (active tasks, volunteers
       # Parse response
       # Return structured dict
   ```
-- Save analysis result back to Firestore survey document
+- Save analysis result back to SQLite DB via `db_service.update_survey_analysis()`
 - Test with sample survey data
 
 ---
@@ -438,8 +481,8 @@ GET    /api/dashboard/{ngoId}      → Dashboard stats (active tasks, volunteers
     "recent_surveys": last_3_surveys
   }
   ```
-- Create `POST /api/assign` — assign volunteer to task, update Firestore
-- Create `GET /api/assignments/{userId}` — get volunteer's tasks
+- [x] Create `POST /api/assign` — assign volunteer to task, update DB ✅ (Done in Day 2)
+- [x] Create `GET /api/assignments/{userId}` — get volunteer's tasks ✅ (Done in Day 2)
 
 ---
 
@@ -469,7 +512,7 @@ GET    /api/dashboard/{ngoId}      → Dashboard stats (active tasks, volunteers
 - Create `POST /api/chat` endpoint:
   ```python
   def chat(question: str, ngo_id: str) -> str:
-      # Fetch NGO's surveys + tasks + volunteer count from Firestore
+      # Fetch NGO's surveys + tasks + volunteer count from SQLite DB
       # Build context string
       prompt = f"""
       You are an AI assistant for an NGO coordination platform.
@@ -488,7 +531,7 @@ GET    /api/dashboard/{ngoId}      → Dashboard stats (active tasks, volunteers
 #### Day 10 — Demo Data + UI Polish
 
 **Dev 1 (Lead):**
-- Create demo data script — populate Firestore with realistic data:
+- Create demo data script — populate SQLite DB with realistic data:
   - NGO: "Odisha Relief Foundation"
   - 10 volunteers with different skills
   - 3 uploaded surveys (flood relief, education gap, health camp)
@@ -546,7 +589,7 @@ Fix all bugs found during testing.
 **Dev 3 (Backend):**
 - Deploy FastAPI to Render:
   - Create `render.yaml` or manual setup
-  - Add environment variables (GEMINI_API_KEY, Firebase credentials)
+  - Add environment variables (GEMINI_API_KEY, DATABASE_URL, FIREBASE_PROJECT_ID)
   - Test all API endpoints on production URL
 - Update Next.js env to point to production FastAPI URL
 
@@ -571,7 +614,7 @@ Record a 3-5 minute demo video showing:
 7. (3:45–4:00) Impact dashboard — volunteers deployed, tasks completed, people helped
 
 **Tips:**
-- Use demo data (pre-loaded Firestore)
+- Use demo data (pre-loaded SQLite DB)
 - Screen record at 1080p
 - Add captions/text overlays on key moments
 - Background music (soft, non-distracting)
@@ -634,7 +677,8 @@ Record a 3-5 minute demo video showing:
 **Double Check:**
 - [ ] Gemini API working on production
 - [ ] Firebase Auth working on production
-- [ ] File upload working on production
+- [ ] File upload working on production (local storage)
+- [ ] SQLite → PostgreSQL migration done for production
 - [ ] All 4 Gemini features working: Analysis, Matching, Chat, (Dashboard insights)
 
 ---
@@ -704,9 +748,9 @@ main          ← production only, merge before submission
 |----------|------------------|
 | **AI Usage** | 4 Gemini features: Survey Analysis, Volunteer Matching, Chat, Dashboard Insights |
 | **Impact** | Real NGO problem, real social benefit, measurable outcomes |
-| **Technical Complexity** | Full-stack: Next.js + FastAPI + Firebase + Gemini integrated end-to-end |
+| **Technical Complexity** | Full-stack: Next.js + FastAPI + SQLAlchemy + Firebase Auth + Gemini integrated end-to-end |
 | **Completeness** | Working product with auth, upload, analysis, matching, assignment, dashboard |
-| **Google Tech** | Gemini 1.5 Pro + Firebase Auth + Firestore + Firebase Storage = full Google ecosystem |
+| **Google Tech** | Gemini 1.5 Pro + Firebase Auth = core Google ecosystem |
 | **Innovation** | AI-powered matching with explainability — volunteers know WHY they were matched |
 | **Presentation** | Clean UI, compelling demo video, clear problem-solution narrative |
 
@@ -716,8 +760,8 @@ main          ← production only, merge before submission
 
 | Risk | Likelihood | Impact | Mitigation |
 |------|-----------|--------|-----------|
-| Gemini API free tier limit hit | Medium | High | Cache analysis results in Firestore, don't re-analyze same survey |
-| Firebase free tier storage full | Low | Medium | Compress files before upload, limit file size to 5MB |
+| Gemini API free tier limit hit | Medium | High | Cache analysis results in SQLite DB, don't re-analyze same survey |
+| ~~Firebase free tier storage full~~ | ~~Low~~ | ~~Medium~~ | ❌ **Eliminated** — now using backend local storage |
 | Render free tier sleep delay | High | Medium | Add loading screen, or upgrade to paid ($7/month) |
 | Team member stuck on a feature | Medium | High | Daily 15-min standup, help each other, no one works in isolation |
 | Last minute deployment issues | Medium | High | Deploy by Day 12, not Day 15 — leave 3 days buffer |
@@ -736,5 +780,29 @@ Every day, each developer answers:
 Keep it short — standup is not a status meeting, it's a blocker-clearing session.
 
 ---
+
+## 📊 Progress Tracker
+
+| Day | Date | Status |
+|-----|------|--------|
+| Day 1 | 21 March 2026 | ✅ Completed |
+| Day 2 | 23 March 2026 | ✅ Completed (All 3 devs) |
+| Day 3 | — | ✅ Partially done (merged into Day 2) |
+| Day 4 | — | ⬜ Pending |
+| Day 5 | — | ⬜ Pending |
+| Day 6 | — | ⬜ Pending |
+| Day 7 | — | ⬜ Pending |
+| Day 8 | — | ⬜ Pending |
+| Day 9 | — | ⬜ Pending |
+| Day 10 | — | ⬜ Pending |
+| Day 11 | — | ⬜ Pending |
+| Day 12 | — | ⬜ Pending |
+| Day 13 | — | ⬜ Pending |
+| Day 14 | — | ⬜ Pending |
+| Day 15 | — | ⬜ Pending |
+
+---
+
+*Last Updated: 23 March 2026*
 
 *Built with 🔥 by ClutchCode — We deliver when it matters most.*

@@ -4,9 +4,11 @@ import { usePathname } from "next/navigation";
 
 import { AppShell } from "@/components/layout/app-shell";
 
+const NO_SHELL_ROUTES = ["/", "/login", "/onboarding"];
+
 export function AppFrame({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const showShell = pathname !== "/";
+  const showShell = !NO_SHELL_ROUTES.includes(pathname);
 
   if (!showShell) {
     return <>{children}</>;
