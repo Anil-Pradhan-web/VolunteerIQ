@@ -17,10 +17,12 @@ export default function LandingPage() {
           <Link href="/dashboard" className="hidden text-sm font-medium text-slate-600 hover:text-slate-900 sm:block transition-colors">
             Dashboard
           </Link>
-          <Button variant="outline" className="rounded-full border-slate-200 bg-white/50 text-slate-700 backdrop-blur-md hover:bg-slate-50 transition-colors">
-            Sign In
-          </Button>
-          <Link href="/dashboard">
+          <Link href="/login">
+            <Button variant="outline" className="rounded-full border-slate-200 bg-white/50 text-slate-700 backdrop-blur-md hover:bg-slate-50 transition-colors">
+              Sign In
+            </Button>
+          </Link>
+          <Link href="/login">
             <Button className="rounded-full bg-indigo-600 text-white shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:bg-indigo-700 transition-all">
               Get Started
             </Button>

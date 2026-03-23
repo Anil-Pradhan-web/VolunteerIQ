@@ -1,20 +1,12 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+
+from app.database import get_db
+from services import db_service
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 
 
 @router.get("/{ngo_id}")
-def get_dashboard(ngo_id: str) -> dict:
-    return {
-        "ngoId": ngo_id,
-        "total_volunteers": 10,
-        "active_tasks": 3,
-        "completed_tasks": 1,
-        "open_tasks": 2,
-        "top_problems": ["Flood relief supply gaps", "Healthcare access", "Education drop-off"],
-        "recent_surveys": [
-            "flood_relief_survey.csv",
-            "education_gap_survey.pdf",
-            "health_camp_report.pdf",
-        ],
-    }
+def get_dashboard(ngo_id: str, db: Session = Depends(get_db)) -> dict:
+    return db_service.get_dashboard_stats(db, ngo_id)
