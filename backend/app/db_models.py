@@ -29,6 +29,7 @@ class User(Base):
     role: Mapped[str] = mapped_column(
         Enum("volunteer", "ngo_admin", name="user_role"), default="volunteer"
     )
+    photo_url: Mapped[str] = mapped_column(String(1024), default="")
     skills: Mapped[list] = mapped_column(JSON, default=list)
     availability: Mapped[list] = mapped_column(JSON, default=list)
     location: Mapped[str] = mapped_column(String(256), default="")

@@ -1,25 +1,59 @@
 "use client";
 
 import { Bell, ChevronDown, LogOut, Search } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth-context";
 
 export function Header() {
   const { profile, user, signOut } = useAuth();
+  const pathname = usePathname();
 
   // Prefer real Google user data over backend dev-mode profile
   const displayName = user?.displayName || profile?.name || "User";
-  const displayRole = profile?.role === "ngo_admin" ? "NGO Admin" : "Volunteer";
+  const displayRole = "Volunteer";
   const photoURL =
     user?.photoURL ||
     `https://api.dicebear.com/7.x/notionists/svg?seed=${displayName}&backgroundColor=e2e8f0`;
 
+  const routeMeta: Record<string, { title: string; subtitle: string }> = {
+    "/dashboard": {
+      title: "Dashboard",
+      subtitle: "Track live operations, tasks, and community priorities."
+    },
+    "/tasks": {
+      title: "Task Operations",
+      subtitle: "Create and monitor assignments with clear accountability."
+    },
+    "/upload": {
+      title: "Survey Intelligence",
+      subtitle: "Upload survey files and analyze urgent needs with AI."
+    },
+    "/volunteers": {
+      title: "Volunteer Network",
+      subtitle: "Find the right people by skills, location, and availability."
+    },
+    "/volunteer/profile": {
+      title: "My Profile",
+      subtitle: "Keep your profile accurate for better task matching."
+    }
+  };
+
+  const activeMeta =
+    routeMeta[pathname] ||
+    (pathname.startsWith("/tasks/")
+      ? { title: "Task Details", subtitle: "Review assignment context and status." }
+      : { title: "VolunteerIQ", subtitle: "Secure coordination workspace." });
+
   return (
     <header className="flex flex-col gap-4 pb-2 pt-1 lg:flex-row lg:items-center lg:justify-between">
-      <h1 className="text-[28px] font-semibold tracking-tight text-slate-900">
-        Dashboard
-      </h1>
+      <div>
+        <h1 className="text-[28px] font-semibold tracking-tight text-slate-900">
+          {activeMeta.title}
+        </h1>
+        <p className="text-sm text-slate-500">{activeMeta.subtitle}</p>
+      </div>
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
         <div className="relative flex items-center gap-3">
