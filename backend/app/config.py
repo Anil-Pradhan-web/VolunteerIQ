@@ -17,7 +17,9 @@ class Settings:
     firebase_client_email: str = os.getenv("FIREBASE_CLIENT_EMAIL", "")
     firebase_private_key: str = os.getenv("FIREBASE_PRIVATE_KEY", "").replace("\\n", "\n")
     gemini_api_key: str = os.getenv("GEMINI_API_KEY", "")
-    gemini_model: str = os.getenv("GEMINI_MODEL", "gemini-1.5-pro")
+    gemini_model: str = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    groq_api_key: str = os.getenv("GROQ_API_KEY", "")
+    groq_model: str = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 
     def __post_init__(self) -> None:
         origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")

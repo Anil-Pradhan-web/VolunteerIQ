@@ -4,18 +4,16 @@ import { useEffect, useState } from "react";
 import {
   MapPin,
   Mail,
-  Calendar,
   Award,
   Save,
-  User,
   Briefcase,
   Clock,
 } from "lucide-react";
 
+import { PageHeader } from "@/components/common/page-header";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
@@ -52,6 +50,7 @@ export default function VolunteerProfilePage() {
   );
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (profile) {
@@ -77,8 +76,13 @@ export default function VolunteerProfilePage() {
 
   const handleSave = async () => {
     if (!user || !profile) return;
+    if (!location.trim()) {
+      setError("Location is required for task matching.");
+      return;
+    }
 
     setIsSaving(true);
+    setError("");
     try {
       const token = await user.getIdToken();
       const res = await fetch(`${API_URL}/api/volunteers/${profile.uid}`, {
@@ -101,9 +105,12 @@ export default function VolunteerProfilePage() {
         setSaved(true);
         await refreshProfile();
         setTimeout(() => setSaved(false), 3000);
+      } else {
+        setError("Could not save profile. Please try again.");
       }
     } catch (err) {
       console.error("Failed to save profile:", err);
+      setError("Network error while saving profile.");
     } finally {
       setIsSaving(false);
     }
@@ -111,16 +118,10 @@ export default function VolunteerProfilePage() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-          My Profile
-        </h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Manage your skills, availability, and location to get better task
-          matches.
-        </p>
-      </div>
+      <PageHeader
+        title="My Profile"
+        description="Keep your information accurate so task matching stays reliable."
+      />
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Profile Card */}
@@ -139,7 +140,7 @@ export default function VolunteerProfilePage() {
               {profile?.name || "Loading..."}
             </h2>
             <p className="text-sm text-slate-500">
-              {profile?.role === "ngo_admin" ? "NGO Admin" : "Volunteer"}
+              Volunteer
             </p>
 
             <div className="mt-6 w-full space-y-3">
@@ -266,6 +267,7 @@ export default function VolunteerProfilePage() {
                 ✓ Profile saved successfully!
               </span>
             )}
+            {error && <span className="text-sm font-medium text-rose-600">{error}</span>}
           </div>
         </div>
       </div>

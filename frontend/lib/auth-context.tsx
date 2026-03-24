@@ -25,7 +25,7 @@ export interface UserProfile {
   uid: string;
   name: string;
   email: string;
-  role: "volunteer" | "ngo_admin";
+  role: "volunteer";
   photoURL?: string;
   skills?: string[];
   availability?: string[];
@@ -113,10 +113,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (firebaseUser) {
         const data = await verifyAndFetchProfile(firebaseUser);
 
-        // First login → redirect to onboarding for role selection
+        // First login → redirect directly to their profile to complete registration
         if (data.firstLogin) {
           setLoading(false);
-          window.location.href = "/onboarding";
+          window.location.href = "/volunteer/profile";
           return;
         }
       } else {

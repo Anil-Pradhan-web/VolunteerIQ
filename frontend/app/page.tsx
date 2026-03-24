@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 
 export default function LandingPage() {
   return (
-    <main className="flex min-h-screen flex-col overflow-hidden bg-[#fafafa] font-sans text-slate-900 selection:bg-indigo-100 selection:text-indigo-900">
+    <main className="flex min-h-screen flex-col overflow-hidden bg-[#fafafa] font-sans text-slate-900 selection:bg-primary/20 selection:text-slate-900">
       {/* Navbar */}
       <nav className="mx-auto flex w-full max-w-7xl items-center justify-between p-6 lg:px-8">
         <div className="flex items-center gap-3">
@@ -14,17 +14,14 @@ export default function LandingPage() {
           <span className="font-display text-xl font-bold tracking-tight">VolunteerIQ</span>
         </div>
         <div className="flex items-center gap-4">
-          <Link href="/dashboard" className="hidden text-sm font-medium text-slate-600 hover:text-slate-900 sm:block transition-colors">
-            Dashboard
-          </Link>
           <Link href="/login">
             <Button variant="outline" className="rounded-full border-slate-200 bg-white/50 text-slate-700 backdrop-blur-md hover:bg-slate-50 transition-colors">
               Sign In
             </Button>
           </Link>
           <Link href="/login">
-            <Button className="rounded-full bg-indigo-600 text-white shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:bg-indigo-700 transition-all">
-              Get Started
+            <Button className="rounded-full">
+              Start Coordinating
             </Button>
           </Link>
         </div>
@@ -42,7 +39,7 @@ export default function LandingPage() {
 
           <h1 className="mt-4 font-display text-5xl font-extrabold tracking-tight text-slate-900 sm:text-7xl leading-[1.1]">
             Smart resource <br />
-            <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-primary via-amber-500 to-emerald-500 bg-clip-text text-transparent">
               allocation for NGOs.
             </span>
           </h1>
@@ -52,9 +49,9 @@ export default function LandingPage() {
           </p>
 
           <div className="mt-10 flex items-center gap-x-6">
-            <Link href="/dashboard">
-              <Button size="lg" className="h-14 rounded-full bg-indigo-600 px-8 text-base shadow-[0_8px_30px_rgba(79,70,229,0.3)] hover:bg-indigo-700 hover:scale-[1.03] transition-all">
-                Enter Dashboard <ArrowRight className="ml-2 h-5 w-5" />
+            <Link href="/login">
+              <Button size="lg" className="h-14 rounded-full px-8 text-base">
+                Continue to Workspace <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
             <a href="#features" className="text-sm font-semibold leading-6 text-slate-900 hover:text-indigo-600 transition-colors">

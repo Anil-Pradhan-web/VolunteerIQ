@@ -24,9 +24,17 @@ async def verify_token(
     uid = user.get("uid", "")
     email = user.get("email", "")
     name = user.get("name", user.get("display_name", ""))
+    picture = user.get("picture", "")
 
     existing = db_service.get_user(db, uid)
     if existing:
+        # If the user doesn't have a photo stored but Google provides one, update it.
+        if picture and not existing.get("photoURL"):
+            db_user = db.query(db_service.User).filter(db_service.User.id == uid).first()
+            if db_user:
+                db_user.photo_url = picture
+                db.commit()
+                existing["photoURL"] = picture
         return {"status": "ok", "user": existing}
 
     # First login — create profile
@@ -35,6 +43,7 @@ async def verify_token(
         "name": name or "New User",
         "email": email,
         "role": "volunteer",
+        "photoURL": picture,
         "skills": [],
         "availability": [],
         "location": "",

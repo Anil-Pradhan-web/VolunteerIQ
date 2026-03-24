@@ -35,7 +35,7 @@ class TaskUpdate(BaseModel):
 class VolunteerProfile(BaseModel):
     name: str
     email: str | None = None
-    role: Literal["volunteer", "ngo_admin"] = "volunteer"
+    role: Literal["volunteer"] = "volunteer"
     skills: list[str] = Field(default_factory=list)
     availability: list[str] = Field(default_factory=list)
     location: str

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { LogIn, Sparkles, Shield, Zap, Users2 } from "lucide-react";
 
 import { useAuth } from "@/lib/auth-context";
@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 export default function LoginPage() {
   const { user, loading, signInWithGoogle } = useAuth();
   const router = useRouter();
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (!loading && user) {
@@ -18,7 +19,12 @@ export default function LoginPage() {
   }, [user, loading, router]);
 
   const handleGoogleLogin = async () => {
-    await signInWithGoogle();
+    setError("");
+    try {
+      await signInWithGoogle();
+    } catch {
+      setError("Sign-in failed. Please allow popup and try again.");
+    }
   };
 
   if (loading) {
@@ -32,7 +38,7 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen">
       {/* Left Panel — Branding */}
-      <div className="relative hidden w-1/2 overflow-hidden bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 lg:flex lg:flex-col lg:justify-between lg:p-12">
+      <div className="relative hidden w-1/2 overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 lg:flex lg:flex-col lg:justify-between lg:p-12">
         {/* Background patterns */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute left-10 top-10 h-72 w-72 rounded-full bg-white/20 blur-3xl" />
@@ -54,7 +60,7 @@ export default function LoginPage() {
             <br />
             coordination for
             <br />
-            <span className="text-emerald-300">social impact.</span>
+            <span className="text-amber-300">social impact.</span>
           </h2>
 
           <div className="space-y-4">
@@ -126,6 +132,11 @@ export default function LoginPage() {
             </svg>
             Continue with Google
           </Button>
+          {error ? (
+            <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+              {error}
+            </div>
+          ) : null}
 
           <div className="text-center">
             <p className="text-xs text-slate-400">
