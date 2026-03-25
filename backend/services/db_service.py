@@ -130,10 +130,24 @@ def update_task(db: Session, task_id: int, data: dict) -> dict | None:
     if not task:
         return None
 
-    if "status" in data:
-        task.status = data["status"]
-    if "assignedTo" in data:
+    # Basic string/literal fields
+    for field in ["title", "description", "location", "status"]:
+        if field in data and data[field] is not None:
+            setattr(task, field, data[field])
+
+    # List fields (Mapping from camelCase to snake_case if necessary)
+    if "requiredSkills" in data and data["requiredSkills"] is not None:
+        task.required_skills = data["requiredSkills"]
+    elif "required_skills" in data and data["required_skills"] is not None:
+        task.required_skills = data["required_skills"]
+
+    if "assignedTo" in data and data["assignedTo"] is not None:
         task.assigned_to = data["assignedTo"]
+    elif "assigned_to" in data and data["assigned_to"] is not None:
+        task.assigned_to = data["assigned_to"]
+
+    if "deadline" in data:
+        task.deadline = data["deadline"]
 
     db.commit()
     db.refresh(task)
@@ -179,6 +193,30 @@ def assign_volunteer(db: Session, task_id: int, volunteer_id: str) -> dict:
     db.commit()
     db.refresh(assignment)
     return _assignment_to_dict(assignment)
+
+
+def unassign_volunteer(db: Session, task_id: int, volunteer_id: str) -> bool:
+    """Remove a volunteer from a task and delete the assignment record."""
+    from app.db_models import Assignment, Task
+
+    # 1. Delete the assignment record
+    db.query(Assignment).filter(
+        Assignment.task_id == task_id, Assignment.volunteer_id == volunteer_id
+    ).delete()
+
+    # 2. Update the Task's assigned_to list
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if task:
+        current = task.assigned_to or []
+        if volunteer_id in current:
+            task.assigned_to = [v for v in current if v != volunteer_id]
+        
+        # If no more volunteers, reset status to open
+        if not task.assigned_to:
+            task.status = "open"
+
+    db.commit()
+    return True
 
 
 def get_assignments(db: Session, user_id: str) -> list[dict]:

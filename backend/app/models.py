@@ -29,13 +29,20 @@ class TaskCreate(BaseModel):
 
 
 class TaskUpdate(BaseModel):
-    status: Literal["open", "assigned", "completed"]
+    title: str | None = None
+    description: str | None = None
+    required_skills: list[str] | None = Field(default=None, alias="requiredSkills")
+    location: str | None = None
+    status: Literal["open", "assigned", "completed"] | None = None
+    deadline: datetime | None = None
+
+    model_config = {"populate_by_name": True, "extra": "ignore"}
 
 
 class VolunteerProfile(BaseModel):
     name: str
     email: str | None = None
-    role: Literal["volunteer"] = "volunteer"
+    role: Literal["volunteer", "ngo_admin"] = "volunteer"
     skills: list[str] = Field(default_factory=list)
     availability: list[str] = Field(default_factory=list)
     location: str
@@ -44,6 +51,7 @@ class VolunteerProfile(BaseModel):
 class MatchRequest(BaseModel):
     task: dict
     volunteers: list[dict]
+    provider: Literal["gemini", "groq"] = "gemini"
 
 
 class AssignmentResponse(BaseModel):

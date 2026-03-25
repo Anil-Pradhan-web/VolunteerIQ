@@ -35,7 +35,7 @@ def update_task(
     payload: TaskUpdate,
     db: Session = Depends(get_db),
 ) -> dict:
-    updated = db_service.update_task(db, task_id, {"status": payload.status})
+    updated = db_service.update_task(db, task_id, payload.model_dump(exclude_unset=True))
     if not updated:
         raise HTTPException(status_code=404, detail="Task not found")
     return updated

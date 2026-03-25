@@ -25,7 +25,7 @@ export interface UserProfile {
   uid: string;
   name: string;
   email: string;
-  role: "volunteer";
+  role: "volunteer" | "ngo_admin";
   photoURL?: string;
   skills?: string[];
   availability?: string[];
