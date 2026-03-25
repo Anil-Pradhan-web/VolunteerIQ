@@ -87,8 +87,8 @@ async def upload_survey(
     analysis = None
     if extracted_text and not extracted_text.startswith("["):
         if ai_provider == "groq":
-            from services.groq_service import analyze_survey as groq_analyze
-            analysis = groq_analyze(extracted_text)
+            from services.groq_service import groq_service
+            analysis = groq_service.analyze_survey(extracted_text)
         else:
             analysis = gemini_service.analyze_survey(extracted_text)
 

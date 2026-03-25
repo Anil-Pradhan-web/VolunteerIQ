@@ -12,7 +12,7 @@ export function Header() {
 
   // Prefer real Google user data over backend dev-mode profile
   const displayName = user?.displayName || profile?.name || "User";
-  const displayRole = "Volunteer";
+  const displayRole = profile?.role === "ngo_admin" ? "NGO Administrator" : "Volunteer Personnel";
   const photoURL =
     user?.photoURL ||
     `https://api.dicebear.com/7.x/notionists/svg?seed=${displayName}&backgroundColor=e2e8f0`;

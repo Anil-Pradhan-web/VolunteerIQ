@@ -21,6 +21,15 @@ def assign_volunteer(
     return db_service.assign_volunteer(db, payload.task_id, payload.volunteer_id)
 
 
+@router.post("/unassign")
+def unassign_volunteer(
+    payload: AssignRequest,
+    db: Session = Depends(get_db),
+) -> dict:
+    success = db_service.unassign_volunteer(db, payload.task_id, payload.volunteer_id)
+    return {"status": "ok", "success": success}
+
+
 @router.get("/assignments/{user_id}")
 def get_user_assignments(
     user_id: str,

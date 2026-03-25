@@ -24,7 +24,7 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="sticky top-6 flex h-[calc(100vh-48px)] w-full flex-col rounded-[24px] bg-white px-5 py-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-100 lg:w-[280px]">
+    <aside className="flex w-full flex-col rounded-[24px] bg-white px-5 py-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-100 lg:sticky lg:top-6 lg:h-[calc(100vh-48px)] lg:w-[280px]">
       <div className="mb-10 flex items-center gap-3 px-3 cursor-pointer">
         <img src="/logo.png" alt="VolunteerIQ Logo" className="h-[42px] w-[42px] rounded-xl object-cover shadow-sm ring-1 ring-slate-900/5" />
         <p className="font-display text-2xl font-bold tracking-tight text-slate-900">VolunteerIQ</p>
