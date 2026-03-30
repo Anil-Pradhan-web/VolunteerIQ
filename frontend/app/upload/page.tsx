@@ -323,8 +323,8 @@ export default function UploadPage() {
                                   onChange={(e) => setAiProvider(e.target.value as "gemini" | "groq")}
                                   className="border-none bg-transparent p-0 h-auto font-bold text-lg text-white focus:ring-0 w-auto min-w-[120px]"
                                 >
-                                  <option value="gemini">Gemini 1.5 Pro</option>
-                                  <option value="groq">Groq Llama 3</option>
+                                  <option value="gemini" className="text-slate-900 bg-white">Gemini 1.5 Pro</option>
+                                  <option value="groq" className="text-slate-900 bg-white">Groq Llama 3</option>
                                 </Select>
                             </div>
                          </div>

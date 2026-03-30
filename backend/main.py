@@ -9,6 +9,7 @@ from app.db_models import Base
 from app.models import HealthResponse
 from routes.assignments import router as assignments_router
 from routes.auth import router as auth_router
+from routes.chat import router as chat_router
 from routes.dashboard import router as dashboard_router
 from routes.match import router as match_router
 from routes.tasks import router as tasks_router
@@ -57,3 +58,4 @@ app.include_router(volunteers_router)
 app.include_router(match_router)
 app.include_router(dashboard_router)
 app.include_router(assignments_router)
+app.include_router(chat_router)

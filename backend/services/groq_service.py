@@ -145,4 +145,31 @@ Rank by descending match_score. Output ONLY valid JSON array."""
             print(f"Groq match error: {e}")
         return []
 
+    def chat(self, question: str, context: str) -> str:
+        """Answer questions about NGO data using Groq Llama 3."""
+        if not _groq_client:
+            return "Groq AI is not available. Please set your GROQ_API_KEY in the backend .env file."
+
+        prompt = f"""You are an AI assistant for VolunteerIQ, an NGO coordination platform.
+Answer the user's question based on the provided data context. Be helpful, concise (2-3 sentences).
+
+Context Data:
+{context[:2000]}
+
+User Question: {question}
+
+Answer:"""
+
+        try:
+            completion = _groq_client.chat.completions.create(
+                model=settings.groq_model or "llama-3.3-70b-versatile",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.3,
+                max_tokens=300,
+            )
+            return completion.choices[0].message.content or "No response from Groq."
+        except Exception as exc:
+            return f"I'm sorry, I couldn't process that question. Error: {str(exc)[:100]}"
+
+
 groq_service = GroqService()

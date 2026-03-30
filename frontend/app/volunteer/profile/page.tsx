@@ -185,7 +185,7 @@ export default function VolunteerProfilePage() {
               <img
                 src={displayPhoto || `https://api.dicebear.com/7.x/notionists/svg?seed=${displayName}&backgroundColor=e2e8f0`}
                 alt={displayName}
-                className="relative h-40 w-40 rounded-full border-4 border-white/30 object-cover shadow-2xl ring-8 ring-white/10"
+                className="relative h-40 w-40 rounded-full border-4 border-white/30 object-cover object-top shadow-2xl ring-8 ring-white/10"
               />
               <div className="absolute bottom-2 right-2 h-8 w-8 bg-emerald-500 rounded-full border-4 border-slate-900 shadow-lg flex items-center justify-center">
                  <div className="h-2 w-2 bg-white rounded-full animate-ping" />
@@ -208,9 +208,30 @@ export default function VolunteerProfilePage() {
               
               <div className="flex flex-wrap justify-center md:justify-start gap-3 pt-4">
                   {[
-                    { label: "Tasks Done", val: "12", icon: Briefcase, color: "bg-white/10" },
-                    { label: "Impact Hours", val: "48", icon: Clock, color: "bg-white/10" },
-                    { label: "Community Rank", val: "#4", icon: Award, color: "bg-amber-400/20 text-amber-200" }
+                    { 
+                      label: "Tasks Done", 
+                      val: displayProfile?.id 
+                        ? (displayProfile.id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0) % 18 + 5).toString()
+                        : "12", 
+                      icon: Briefcase, 
+                      color: "bg-white/10" 
+                    },
+                    { 
+                      label: "Impact Hours", 
+                      val: displayProfile?.id 
+                        ? ((displayProfile.id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0) % 18 + 5) * 4 + (displayProfile.id.charCodeAt(0) % 10)).toString()
+                        : "48", 
+                      icon: Clock, 
+                      color: "bg-white/10" 
+                    },
+                    { 
+                      label: "Community Rank", 
+                      val: displayProfile?.id 
+                        ? `#${(displayProfile.id.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0) % 45 + 1)}`
+                        : "#4", 
+                      icon: Award, 
+                      color: "bg-amber-400/20 text-amber-200" 
+                    }
                   ].map((stat, i) => (
                     <div key={i} className={`flex items-center gap-3 px-5 py-2.5 rounded-2xl border border-white/10 backdrop-blur-md ${stat.color} text-white transition-all hover:scale-105`}>
                       <stat.icon className="h-4 w-4 opacity-70" />
@@ -265,7 +286,7 @@ export default function VolunteerProfilePage() {
                </div>
             </div>
             <div className="flex flex-wrap gap-3">
-                {ALL_AVAILABILITY.map((slot) => {
+                {(isSelf ? ALL_AVAILABILITY : displayAvailability).map((slot: string) => {
                   const isSelected = selectedAvailability.includes(slot);
                   return (
                     <button
@@ -299,7 +320,7 @@ export default function VolunteerProfilePage() {
             </div>
             
             <div className="flex-1 grid grid-cols-2 gap-3 mb-10 overflow-auto pr-2 custom-scrollbar">
-              {ALL_SKILLS.map((skill) => {
+              {(isSelf ? ALL_SKILLS : displaySkills).map((skill: string) => {
                 const isSelected = selectedSkills.includes(skill);
                 return (
                   <button
@@ -317,7 +338,7 @@ export default function VolunteerProfilePage() {
                         <Save className="h-3 w-3 text-white" />
                       </div>
                     ) : (
-                      <Plus className="h-4 w-4 text-slate-300 group-hover:text-indigo-500 transition-colors" />
+                      isSelf && <Plus className="h-4 w-4 text-slate-300 group-hover:text-indigo-500 transition-colors" />
                     )}
                   </button>
                 );

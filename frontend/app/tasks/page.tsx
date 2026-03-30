@@ -12,10 +12,11 @@ import {
   AlertCircle,
   Clock,
   CheckCircle2,
+  Trash2,
 } from "lucide-react";
 
 import { EmptyState } from "@/components/common/empty-state";
-import { FilterChips } from "@/components/common/filter-chips";
+
 import { PageHeader } from "@/components/common/page-header";
 import { StatCard } from "@/components/common/stat-card";
 import { StatusBadge } from "@/components/common/status-badge";
@@ -148,6 +149,36 @@ export default function TasksPage() {
         ? prev.requiredSkills.filter((s) => s !== skill)
         : [...prev.requiredSkills, skill],
     }));
+  };
+
+  const handleDeleteTask = async (e: React.MouseEvent, taskId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!confirm("Are you sure you want to delete this task? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      let headers: Record<string, string> = {};
+      if (user) {
+        const token = await user.getIdToken();
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+      const res = await fetch(`${API_URL}/api/tasks/${taskId}`, {
+        method: "DELETE",
+        headers,
+      });
+
+      if (res.ok) {
+        setTasks((prev) => prev.filter((t) => t.id !== taskId));
+      } else {
+        alert("Failed to delete task. Please try again.");
+      }
+    } catch (err) {
+      console.error("Delete task error:", err);
+      alert("Network error while deleting task.");
+    }
   };
 
   const filteredTasks = tasks.filter((t) => {
@@ -327,8 +358,26 @@ export default function TasksPage() {
 
       {/* Task List Section */}
       {loading ? (
-        <div className="flex items-center justify-center py-24">
-          <Loader2 className="h-10 w-10 animate-spin text-indigo-500" />
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3 animate-pulse">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="rounded-[32px] bg-white p-6 shadow-sm border border-slate-50 min-h-[220px] flex flex-col justify-between">
+               <div>
+                 <div className="flex justify-between items-center mb-5">
+                   <div className="h-6 w-20 rounded-full bg-slate-100" />
+                   <div className="h-4 w-12 rounded bg-slate-100" />
+                 </div>
+                 <div className="space-y-3">
+                   <div className="h-5 w-3/4 rounded bg-slate-200" />
+                   <div className="h-4 w-full rounded bg-slate-100" />
+                   <div className="h-4 w-5/6 rounded bg-slate-100" />
+                 </div>
+               </div>
+               <div className="pt-4 border-t border-slate-50 mt-4 flex gap-2">
+                 <div className="h-6 w-16 rounded-full bg-slate-100" />
+                 <div className="h-6 w-16 rounded-full bg-slate-100" />
+               </div>
+            </div>
+          ))}
         </div>
       ) : filteredTasks.length === 0 ? (
         <EmptyState
@@ -346,13 +395,22 @@ export default function TasksPage() {
                 style={{ animationDelay: `${i * 50}ms` }}
               >
                 <div className="space-y-5">
-                   <div className="flex items-center justify-between">
-                     <StatusBadge status={task.status} />
-                     <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
-                        <Users2 className="h-3 w-3" />
-                        {task.assignedTo?.length || 0} Found
-                     </div>
-                   </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                         <StatusBadge status={task.status} />
+                         <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-tighter">
+                            <Users2 className="h-3 w-3" />
+                            {task.assignedTo?.length || 0} Found
+                         </div>
+                      </div>
+                      <button 
+                        onClick={(e) => handleDeleteTask(e, task.id)}
+                        className="h-8 w-8 rounded-full flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all active:scale-90"
+                        title="Delete Task"
+                      >
+                         <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
                    
                    <div className="space-y-2">
                      <h3 className="text-xl font-bold text-slate-900 group-hover:text-indigo-600 transition-colors leading-tight line-clamp-1">{task.title}</h3>
