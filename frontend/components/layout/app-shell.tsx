@@ -1,5 +1,6 @@
 import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
+import { GeminiChat } from "@/components/chat/gemini-chat";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
@@ -11,6 +12,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <section className="flex-1 pb-10">{children}</section>
         </main>
       </div>
+      {/* Floating AI Chat Widget — available on all dashboard pages */}
+      <GeminiChat />
     </div>
   );
 }

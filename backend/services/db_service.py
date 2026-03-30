@@ -154,6 +154,20 @@ def update_task(db: Session, task_id: int, data: dict) -> dict | None:
     return _task_to_dict(task)
 
 
+def delete_task(db: Session, task_id: int) -> bool:
+    """Delete a task and its assignments."""
+    from app.db_models import Assignment, Task
+
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        return False
+
+    db.query(Assignment).filter(Assignment.task_id == task_id).delete()
+    db.delete(task)
+    db.commit()
+    return True
+
+
 def _task_to_dict(task: Task) -> dict:
     return {
         "id": str(task.id),
@@ -322,6 +336,16 @@ def get_dashboard_stats(db: Session, ngo_id: str) -> dict:
     if surveys and surveys[0].analysis_result:
         top_problems = surveys[0].analysis_result.get("topProblems", [])
 
+    # Pick up to 15 tasks for map rendering
+    map_tasks = []
+    for t in sorted(tasks, key=lambda x: x.created_at, reverse=True)[:15]:
+        map_tasks.append({
+            "id": str(t.id),
+            "title": t.title,
+            "location": t.location,
+            "status": t.status
+        })
+
     return {
         "ngoId": ngo_id,
         "total_volunteers": total_volunteers,
@@ -330,4 +354,5 @@ def get_dashboard_stats(db: Session, ngo_id: str) -> dict:
         "open_tasks": open_count,
         "top_problems": top_problems,
         "recent_surveys": recent_surveys,
+        "map_tasks": map_tasks,
     }

@@ -1,0 +1,11 @@
+Survey_ID,Location,Area_Type,Primary_Issue,Volunteer_Availability,Community_Need_Score,Active_NGOs,Recent_Activity_Date
+V-101,Berhampur,Urban,Education,Weekends,8.5,12,2026-03-15
+V-102,Chatrapur,Semi-Urban,Healthcare,Evenings,7.2,5,2026-03-10
+V-103,Berhampur,Urban,Environment,Full-time,6.8,8,2026-03-22
+V-104,Gopalpur,Coastal,Waste Management,Weekends,9.1,4,2026-03-18
+V-105,Hinjilicut,Rural,Agriculture Support,Morning,7.5,3,2026-03-05
+V-106,Berhampur,Urban,Skill Development,Evenings,8.0,15,2026-03-28
+V-107,Bhanjanagar,Rural,Water Sanitation,Weekends,8.9,6,2026-02-25
+V-108,Aska,Semi-Urban,Disaster Relief,On-call,9.5,7,2026-03-12
+V-109,Berhampur,Urban,Animal Welfare,Weekends,6.2,10,2026-03-20
+V-110,Chikiti,Rural,Child Nutrition,Full-time,8.7,4,2026-03-02

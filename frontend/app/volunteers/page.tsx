@@ -148,9 +148,28 @@ export default function VolunteersPage() {
 
       {/* Grid Content */}
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-20 gap-4">
-          <Loader2 className="h-10 w-10 animate-spin text-indigo-500" />
-          <p className="text-sm font-black uppercase tracking-widest text-slate-400">Loading Intelligence...</p>
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 animate-pulse">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+             <div key={i} className="rounded-[40px] bg-white p-8 shadow-sm flex flex-col gap-6">
+                <div className="flex items-center gap-5">
+                   <div className="h-20 w-20 rounded-[24px] bg-slate-200/70" />
+                   <div className="space-y-2 flex-1">
+                      <div className="h-5 w-2/3 rounded bg-slate-200" />
+                      <div className="h-3 w-1/3 rounded bg-slate-100" />
+                   </div>
+                </div>
+                <div className="space-y-4">
+                   <div className="h-3 w-1/4 rounded bg-slate-100" />
+                   <div className="flex gap-2">
+                      <div className="h-6 w-16 rounded-xl bg-slate-100" />
+                      <div className="h-6 w-20 rounded-xl bg-slate-100" />
+                   </div>
+                </div>
+                <div className="mt-auto pt-4 border-t border-slate-50">
+                   <div className="h-12 w-full rounded-[24px] bg-slate-100/50" />
+                </div>
+             </div>
+          ))}
         </div>
       ) : filtered.length === 0 ? (
         <EmptyState
@@ -172,14 +191,14 @@ export default function VolunteersPage() {
 
               <div className="flex flex-col h-full gap-8">
                 <div className="flex items-center gap-5">
-                   <div className="relative">
+                    <div className="relative">
                       <img
                         src={vol.photoURL || `https://api.dicebear.com/7.x/notionists/svg?seed=${vol.id}&backgroundColor=f1f5f9`}
                         alt={vol.name}
-                        className="h-20 w-20 rounded-[24px] object-cover bg-slate-100 shadow-lg group-hover:scale-110 transition-transform duration-500"
+                        className="h-24 w-24 rounded-[32px] object-cover object-top bg-slate-100 shadow-lg group-hover:scale-105 transition-transform duration-500 border-2 border-white"
                       />
-                      <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-emerald-500 border-[3px] border-white ring-1 ring-emerald-500/20 shadow-sm" />
-                   </div>
+                      <div className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-emerald-500 border-[4px] border-white ring-1 ring-emerald-500/20 shadow-sm" />
+                    </div>
                    <div className="flex-1 min-w-0">
                       <h3 className="text-xl font-black text-slate-900 truncate tracking-tight">{vol.name}</h3>
                       <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 mt-1 uppercase tracking-wider">

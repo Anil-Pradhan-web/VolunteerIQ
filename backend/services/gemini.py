@@ -8,6 +8,8 @@ Uses Google Generative AI (Gemini 1.5 Pro) for:
 
 import json
 import os
+import time
+import threading
 
 from app.config import settings
 
@@ -60,6 +62,20 @@ def _parse_json_response(text: str) -> dict | list | None:
 
 class GeminiService:
     """Gemini-powered AI analysis and matching."""
+    
+    def __init__(self):
+        self._last_call_time = 0.0
+        self._lock = threading.Lock()
+
+    def _rate_limit(self):
+        """Ensure we don't exceed free tier limits (usually ~15 requests/minute)."""
+        with self._lock:
+            now = time.time()
+            elapsed = now - self._last_call_time
+            # Keep at least 4.2 seconds between calls to comfortably stay under 15 Req/min
+            if elapsed < 4.2:
+                time.sleep(4.2 - elapsed)
+            self._last_call_time = time.time()
 
     def analyze_survey(self, text: str) -> dict:
         """Analyze community survey data and identify top problems."""
@@ -83,6 +99,8 @@ Survey Data:
 {text[:3000]}
 
 Return ONLY valid JSON with the exact keys above. No extra text."""
+
+        self._rate_limit()
 
         try:
             response = _model.generate_content(prompt)
@@ -144,6 +162,8 @@ Return a JSON array with objects containing:
 
 Rank by best fit. Return ONLY a valid JSON array, no extra text."""
 
+        self._rate_limit()
+
         try:
             response = _model.generate_content(prompt)
             parsed = _parse_json_response(response.text)
@@ -167,6 +187,8 @@ Context Data:
 User Question: {question}
 
 Answer:"""
+
+        self._rate_limit()
 
         try:
             response = _model.generate_content(prompt)
