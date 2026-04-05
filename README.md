@@ -373,7 +373,9 @@ Identify community schooling gaps from survey data. Automatically match teachers
 
 | Member | Role |
 |---|---|
-| **Anil Pradhan** | Full-Stack Lead — Architecture, AI Integration, UI/UX, Deployment |
+| **Anil Pradhan** | Full-Stack Lead — Architecture, AI Integration, Deployment |
+| **Sayak Paramanik** | Testing — End to End Test,Firebase Integration |
+| **Sreejita Swain** | UI and UX  — Frontend lead, AI api keys, UI/UX |
 
 ---
 
