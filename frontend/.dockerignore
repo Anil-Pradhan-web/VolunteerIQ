@@ -1,0 +1,10 @@
+node_modules/
+.next/
+out/
+dist/
+coverage/
+.env.local
+.env
+.git/
+.gitignore
+*.md

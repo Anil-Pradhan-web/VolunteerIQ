@@ -1,25 +1,45 @@
+# ── Node / Next.js ──
 node_modules/
 .next/
 out/
 dist/
 coverage/
-.vscode/
-*.db
-*.sqlite3
+
+# ── Python ──
 *.pyc
 *.pyo
 __pycache__/
+.pytest_cache/
 
+# ── Environment & Secrets ──
+.env
+.env.local
+.env.production
+frontend/.env.local
+backend/.env
+
+# ── Database ──
+*.db
+*.sqlite3
+
+# ── IDE ──
+.vscode/
+.idea/
+
+# ── OS ──
+.DS_Store
+Thumbs.db
+
+# ── Build / Deps ──
 frontend/node_modules/
 frontend/.next/
 frontend/out/
-frontend/.env.local
-
 backend/.venv/
 backend/__pycache__/
-backend/.pytest_cache/
-backend/.env
 
-.env
-.DS_Store
-Thumbs.db
+# ── Uploads (local dev only) ──
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# ── Docker ──
+docker-compose.override.yml

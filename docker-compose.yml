@@ -1,0 +1,78 @@
+# ─── VolunteerIQ — Docker Compose ─────────────────────────────
+# Run: docker-compose up --build
+# Access:
+#   Frontend → http://localhost:3000
+#   Backend  → http://localhost:8000
+#   API Docs → http://localhost:8000/docs
+# ──────────────────────────────────────────────────────────────
+
+services:
+  # ── Backend (FastAPI + Gunicorn) ──
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: volunteeriq-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - backend-uploads:/app/uploads
+      - backend-db:/app/data
+    env_file:
+      - ./backend/.env
+    environment:
+      - APP_ENV=production
+      - APP_HOST=0.0.0.0
+      - APP_PORT=8000
+      - DATABASE_URL=sqlite:////app/data/volunteeriq.db
+      - CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - volunteeriq-net
+
+  # ── Frontend (Next.js Standalone) ──
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=http://localhost:8000
+        # Pass Firebase config at build time if needed:
+        # - NEXT_PUBLIC_FIREBASE_API_KEY=${NEXT_PUBLIC_FIREBASE_API_KEY}
+        # - NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=${NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN}
+        # - NEXT_PUBLIC_FIREBASE_PROJECT_ID=${NEXT_PUBLIC_FIREBASE_PROJECT_ID}
+    container_name: volunteeriq-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      - NODE_ENV=production
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - volunteeriq-net
+
+# ── Volumes ──
+volumes:
+  backend-uploads:
+    driver: local
+  backend-db:
+    driver: local
+
+# ── Network ──
+networks:
+  volunteeriq-net:
+    driver: bridge
