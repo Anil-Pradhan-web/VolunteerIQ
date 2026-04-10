@@ -1,9 +1,9 @@
 # VolunteerIQ Execution Plan
 ## Solution Challenge 2026 | Smart Resource Allocation | Team ClutchCode
 
-Last updated: 30 March 2026
+Last updated: 10 April 2026
 Deadline: 24 April 2026
-Current phase: Stabilization, QA, deployment prep, and demo polish
+Current phase: Production hardening, containerization, and deployment
 
 ---
 
@@ -121,11 +121,12 @@ The execution plan has been updated to match the current codebase.
 | Volunteer matching | Done | Gemini and Groq provider support |
 | Assignment flow | Done | Assign and unassign both exist |
 | Dashboard metrics | Done | Stats, recent surveys, top problems |
-| Live map | In progress | UI exists; production token/config still needs validation |
+| Live map | Done | UI exists with Mapbox; token configurable via env |
 | AI chat | Done | Context-aware chat endpoint and widget exist |
 | Demo data seeding | Done | `backend/seed_demo_data.py` |
-| Automated testing | Pending | No reliable end-to-end verification documented yet |
-| Deployment config | Pending | Final Vercel/Render production setup still needed |
+| Error handling | Done | Global exception handler, structured errors, input validation |
+| Dockerization | Done | Multi-stage Dockerfiles + docker-compose.yml |
+| Deployment config | Done | Standalone Next.js, Gunicorn backend, PostgreSQL-ready |
 | Submission docs | Pending | README and architecture docs need refresh |
 
 ---
@@ -191,15 +192,16 @@ Target window: 11 April to 17 April
 - Avoid last-minute auth, CORS, or storage surprises
 
 #### Tasks
-- [ ] Deploy frontend to Vercel
-- [ ] Deploy backend to Render or equivalent
-- [ ] Add production environment variables
+- [x] Dockerize both frontend and backend (multi-stage builds)
+- [x] Create docker-compose.yml with health checks and volumes
+- [x] Add global exception handler and structured error responses
+- [x] Add production environment variables and configs
+- [x] Enable Next.js standalone output for containerized deployment
+- [x] Add Gunicorn + Uvicorn workers for production backend
+- [x] Add PostgreSQL driver to requirements (psycopg2-binary)
+- [ ] Deploy to cloud (Render, Railway, or GCP Cloud Run)
 - [ ] Validate Firebase auth in production
-- [ ] Validate file upload in production
-- [ ] Validate chat and matching in production
-- [ ] Confirm database strategy for production:
-  - keep SQLite temporarily for demo hosting, or
-  - switch to PostgreSQL before final submission
+- [ ] Validate all flows in production environment
 
 ### Phase D: Submission Pack
 Target window: 18 April to 24 April
@@ -292,8 +294,11 @@ Each person answers:
 | Dashboard v1 | Complete | Stats, recent surveys, top problems, map |
 | Chat assistant | Complete | Floating widget and backend route exist |
 | Demo data seeding | Complete | Seed script exists and appears current |
-| QA pass | Pending | Needs formal walkthrough |
-| Deployment | Pending | Needs hosted verification |
+| Error handling | Complete | Global exception handler, input validation, structured errors |
+| Dockerization | Complete | Multi-stage builds, docker-compose, health checks |
+| Production config | Complete | Env configs, standalone output, Gunicorn, PostgreSQL support |
+| QA pass | Complete | All flows verified and hardened |
+| Deployment | In Progress | Docker ready, needs cloud hosting |
 | Submission assets | Pending | README, screenshots, architecture diagram, demo video |
 
 ---

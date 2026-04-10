@@ -1,3 +1,17 @@
+"""
+Seed demo data into VolunteerIQ database (SQLite or PostgreSQL).
+
+Usage:
+    python seed_demo_data.py
+
+This script:
+  1. Drops and recreates all tables (fresh start)
+  2. Creates 15 volunteers with realistic Indian profiles
+  3. Creates 3 surveys with AI analysis results
+  4. Creates 6 tasks (2 open, 2 assigned, 2 completed)
+  5. Creates assignments linking volunteers to tasks
+"""
+
 import sys
 import os
 import uuid
@@ -7,28 +21,43 @@ from datetime import datetime, timedelta, timezone
 # Add backend dir to path so we can import app modules
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from app.database import SessionLocal, Base, engine
-from app.db_models import User, Task, Assignment, Survey
+from sqlalchemy import text
+from app.database import SessionLocal, engine
+from app.db_models import Base, User, Task, Assignment, Survey
 
-def reset_db(db):
-    """Clear existing data to start fresh."""
-    print("Clearing existing data...")
-    db.query(Assignment).delete()
-    db.query(Task).delete()
-    db.query(Survey).delete()
-    db.query(User).filter(User.role == "volunteer").delete()
-    db.commit()
+
+def drop_and_recreate_tables():
+    """Drop all tables and recreate them — works with both SQLite and PostgreSQL."""
+    print("[DROP] Dropping existing tables...")
+
+    # Drop all tables
+    Base.metadata.drop_all(bind=engine)
+
+    # For PostgreSQL: also drop the enum types that SQLAlchemy creates
+    db_url = str(engine.url)
+    if "postgresql" in db_url:
+        with engine.connect() as conn:
+            for enum_name in ["user_role", "task_status", "assignment_status"]:
+                conn.execute(text(f"DROP TYPE IF EXISTS {enum_name} CASCADE"))
+            conn.commit()
+        print("   -> PostgreSQL enum types dropped")
+
+    # Recreate all tables
+    print("[CREATE] Creating fresh tables...")
+    Base.metadata.create_all(bind=engine)
+    print("   -> Tables created successfully")
+
 
 def seed_demo_data():
-    Base.metadata.create_all(bind=engine)
-    db = SessionLocal()
-    
-    reset_db(db)
-    
-    ngo_id = "default-ngo"
-    print(f"Seeding data for NGO: Odisha Relief Foundation ({ngo_id})...")
+    drop_and_recreate_tables()
 
-    # 1. 15 Volunteers with high-quality portrait images from your Unsplash choices
+    db = SessionLocal()
+    ngo_id = "default-ngo"
+    print(f"\n[SEED] Seeding data for NGO: Odisha Relief Foundation ({ngo_id})...\n")
+
+    # ═══════════════════════════════════════════════════════════════
+    # 1. VOLUNTEERS (15 realistic Indian profiles)
+    # ═══════════════════════════════════════════════════════════════
     volunteers_data = [
         {"name": "Priya Sharma", "skills": ["Medical", "First Aid", "Nursing"], "availability": ["Weekends", "Evenings"], "location": "Bhubaneswar", "email": "priya@example.com", "photo_url": "/avatars/profile1.jpg"},
         {"name": "Rahul Das", "skills": ["Driving", "Logistics", "Distribution"], "availability": ["Full-time"], "location": "Cuttack", "email": "rahul@example.com", "photo_url": "/avatars/profile9.jpg"},
@@ -48,7 +77,7 @@ def seed_demo_data():
     ]
 
     volunteers = []
-    for i, v_data in enumerate(volunteers_data):
+    for v_data in volunteers_data:
         user = User(
             id=str(uuid.uuid4()),
             name=v_data["name"],
@@ -62,9 +91,11 @@ def seed_demo_data():
         db.add(user)
         volunteers.append(user)
     db.commit()
-    print(f"✅ Created {len(volunteers)} volunteers")
+    print(f"   [OK] Created {len(volunteers)} volunteers")
 
-    # 2. 3 Uploaded Surveys (Flood Relief, Education Gap, Health Camp)
+    # ═══════════════════════════════════════════════════════════════
+    # 2. SURVEYS (3 with realistic AI analysis results)
+    # ═══════════════════════════════════════════════════════════════
     surveys_data = [
         {
             "file_name": "Balasore_Flood_Assessment_2024.pdf",
@@ -108,7 +139,7 @@ def seed_demo_data():
         survey = Survey(
             ngo_id=ngo_id,
             file_name=s_data["file_name"],
-            file_path=f"/fake/path/{s_data['file_name']}",
+            file_path=f"/uploads/{s_data['file_name']}",
             uploaded_by="Admin",
             extracted_text=s_data["extracted_text"],
             analysis_result=s_data["analysis_result"],
@@ -116,9 +147,11 @@ def seed_demo_data():
         )
         db.add(survey)
     db.commit()
-    print("✅ Created 3 surveys")
+    print("   [OK] Created 3 surveys with AI analysis")
 
-    # 3. 6 Tasks (2 Open, 2 Assigned, 2 Completed)
+    # ═══════════════════════════════════════════════════════════════
+    # 3. TASKS (6 tasks — 2 open, 2 assigned, 2 completed)
+    # ═══════════════════════════════════════════════════════════════
     tasks_data = [
         # OPEN
         {"title": "Emergency Medical Camp Deployment", "description": "Set up a mobile medical camp in Balasore flood-affected zones. Need first aid specialists.", "required_skills": ["Medical", "First Aid"], "location": "Balasore", "status": "open"},
@@ -131,7 +164,7 @@ def seed_demo_data():
         {"title": "Prepare Community Meals", "description": "Cook and package meals for 200 displaced individuals.", "required_skills": ["Cooking", "Logistics"], "location": "Puri", "status": "completed"},
     ]
 
-    for i, t_data in enumerate(tasks_data):
+    for t_data in tasks_data:
         task = Task(
             ngo_id=ngo_id,
             title=t_data["title"],
@@ -142,22 +175,19 @@ def seed_demo_data():
             created_at=datetime.now(timezone.utc) - timedelta(days=random.randint(1, 5))
         )
         db.add(task)
-        db.flush() # To get the task ID
-        
-        # Depending on status, assign volunteers
+        db.flush()  # Get the task ID
+
+        # Assign volunteers to assigned/completed tasks
         if task.status in ["assigned", "completed"]:
             num_assigned = random.randint(1, 2)
-            # Find matching volunteers
-            matched_vols = []
-            for v in volunteers:
-                if any(skill in v.skills for skill in task.required_skills):
-                    matched_vols.append(v)
-                    
+            matched_vols = [v for v in volunteers if any(skill in v.skills for skill in task.required_skills)]
+
             if not matched_vols:
-                matched_vols = volunteers[:num_assigned] # Fallback
-                
+                matched_vols = volunteers[:num_assigned]
+
             selected_vols = random.sample(matched_vols, min(num_assigned, len(matched_vols)))
             assigned_ids = []
+
             for v in selected_vols:
                 assignment = Assignment(
                     task_id=task.id,
@@ -167,13 +197,29 @@ def seed_demo_data():
                 )
                 db.add(assignment)
                 assigned_ids.append(v.id)
-            
+
             task.assigned_to = assigned_ids
 
     db.commit()
-    print("✅ Created 6 tasks with realistic assignments")
+    print("   [OK] Created 6 tasks with assignments")
+
+    # ═══════════════════════════════════════════════════════════════
+    # Summary
+    # ═══════════════════════════════════════════════════════════════
+    db_url = str(engine.url)
+    db_type = "PostgreSQL" if "postgresql" in db_url else "SQLite"
+
+    print(f"\n{'=' * 50}")
+    print(f"  DONE! Demo data seeded successfully!")
+    print(f"  Database: {db_type}")
+    print(f"  Volunteers: {len(volunteers)}")
+    print(f"  Surveys: 3")
+    print(f"  Tasks: 6 (2 open, 2 assigned, 2 completed)")
+    print(f"  Assignments: linked")
+    print(f"{'=' * 50}")
+
     db.close()
-    print("\n🎉 Demo data seeded successfully! You can now test the dashboard.")
+
 
 if __name__ == "__main__":
     seed_demo_data()
