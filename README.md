@@ -82,34 +82,80 @@ VolunteerIQ bridges this gap: upload raw field surveys → Gemini AI extracts ur
 ---
 
 ## 🏗️ Architecture
+**Key Tech: Google Gemini 2.5 Flash · Groq Llama 3.3 · Firebase Auth · Mapbox GL · Docker**
 
-<div align="center">
+```mermaid
+flowchart TD
+    User(["👤 NGO Admin / Volunteer"])
 
-<img src="architecture.png" alt="VolunteerIQ System Architecture" width="100%" />
+    subgraph DevTools ["🛠️ Developed Using"]
+        VSCODE["VS Code IDE"] --- GEMINI_CODE["Google Gemini\n(AI Coding Assistant)"]
+    end
 
-</div>
+    subgraph Vercel ["☁️ Vercel — Frontend Hosting"]
+        FE["Next.js 14 App\n(TypeScript + Tailwind CSS + shadcn/ui)"]
+        MAP["🗺️ Mapbox GL\n(Live Operations Map)"]
+        CHAT["💬 AI Chat Widget\n(Floating Assistant)"]
+        AUTH_FE["🔐 Firebase Auth\n(Google Login)"]
+    end
 
+    subgraph Render ["☁️ Render.com — Backend Hosting"]
+        API["FastAPI Server\n(Python · Gunicorn + Uvicorn Workers)"]
+        MIDDLEWARE["Global Error Handler\nRequest Logger · CORS"]
+    end
+
+    subgraph AIServices ["🤖 AI Intelligence Layer"]
+        SURVEY_AI["📄 Survey Analyzer\nExtracts problems, urgency scores,\nrecommended tasks"]
+        MATCH_AI["🎯 Volunteer Matcher\nSkill-based ranking (0-100)\nwith explanations"]
+        CHAT_AI["💡 Context Chat\nQ&A from live NGO data\n(tasks, volunteers, surveys)"]
+    end
+
+    subgraph LLM ["🧠 AI Model Providers"]
+        GEMINI["Google Gemini 2.5 Flash\n(Primary · Rate Limited)"]
+        GROQ["Groq Llama 3.3 70B\n(Fallback · Ultra-fast)"]
+    end
+
+    subgraph DB ["🗃️ Data Storage"]
+        POSTGRES["PostgreSQL Database\n(Neon Cloud · Production)\nUsers · Tasks · Surveys · Assignments"]
+        SQLITE["SQLite\n(Local Development)"]
+        UPLOADS["📁 File Storage\n(PDF · CSV · DOCX · TXT)"]
+    end
+
+    subgraph Docker ["🐳 Containerization"]
+        COMPOSE["docker-compose.yml\n(Multi-stage builds · Health checks)"]
+    end
+
+    User -->|"HTTPS"| FE
+    FE -->|"REST API calls\n(JSON + Auth Token)"| API
+    API --> MIDDLEWARE
+    MIDDLEWARE --> SURVEY_AI & MATCH_AI & CHAT_AI
+    SURVEY_AI & MATCH_AI & CHAT_AI -->|"LLM calls"| GEMINI
+    SURVEY_AI & MATCH_AI & CHAT_AI -.->|"Fallback Switch"| GROQ
+    API --> POSTGRES
+    API -.-> SQLITE
+    API --> UPLOADS
+    FE --- AUTH_FE
+    FE --- MAP
+    FE --- CHAT
+    COMPOSE -.-> API & FE
+
+    style Vercel fill:#000,stroke:#6366f1,color:#fff
+    style Render fill:#10b981,stroke:#000,color:#000
+    style AIServices fill:#1e1b4b,stroke:#8b5cf6,color:#fff
+    style LLM fill:#4338ca,stroke:#fff,color:#fff
+    style DB fill:#1e1b4b,stroke:#f59e0b,color:#fff
+    style DevTools fill:#2ea043,stroke:#fff,color:#fff
+    style Docker fill:#0c4a6e,stroke:#38bdf8,color:#fff
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        FRONTEND (Next.js 14)                    │
-│  Landing Page │ Dashboard │ Task Board │ Survey Upload          │
-│  Volunteer Directory │ AI Chat Widget │ Live Map                │
-│          Firebase Auth  │  Mapbox GL  │  Tailwind CSS           │
-└─────────────────────────┼──────────────────────────────────────-┘
-                          │  HTTP REST (JSON)
-┌─────────────────────────┼──────────────────────────────────────-┐
-│                   BACKEND (FastAPI + Python)                     │
-│  /api/auth  │ /api/tasks  │ /api/chat  │ /api/volunteers        │
-│  /api/upload│ /api/assign │ /api/match │ /api/dashboard         │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │  AI Services: Gemini 2.5 Flash (primary) + Groq (fallback)│  │
-│  │  Global Exception Handler │ Request Logger │ CORS         │  │
-│  └──────────────────────────────────────────────────────────┘   │
-│        PostgreSQL (Neon Cloud)  │  SQLite (local dev)            │
-└─────────────────────────────────────────────────────────────────┘
-│  Docker │ Gunicorn + Uvicorn │ Render │ Vercel                   │
-└─────────────────────────────────────────────────────────────────┘
-```
+
+**Data Flow Explained:**
+1. **User** (NGO Admin or Volunteer) opens the app on **Vercel** and authenticates via **Firebase Google Login**.
+2. Frontend sends REST API calls with auth tokens to the **FastAPI backend** on **Render.com**.
+3. **Survey Upload Flow**: User uploads a PDF/CSV/DOCX → backend extracts text → **Gemini 2.5 Flash** analyzes urgent problems, urgency scores, and auto-generates deployable field tasks.
+4. **Volunteer Matching**: For any task, the AI ranks volunteers by skill match, location, and availability with a score (0–100) and explanation.
+5. **Context-Aware Chat**: The floating AI assistant queries live NGO data (tasks, volunteers, surveys) to answer plain English questions.
+6. **Fallback Strategy**: If Gemini hits rate limits, all AI operations seamlessly switch to **Groq Llama 3.3** for uninterrupted service.
+7. **Data persists** to **PostgreSQL on Neon Cloud** (production) or **SQLite** (local development).
 
 ### Data Models
 
