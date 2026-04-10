@@ -18,9 +18,10 @@
 <p>
   <img src="https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=nextdotjs" />
   <img src="https://img.shields.io/badge/FastAPI-0.111-009688?style=flat-square&logo=fastapi&logoColor=white" />
-  <img src="https://img.shields.io/badge/Google_Gemini-1.5_Pro-4285F4?style=flat-square&logo=google&logoColor=white" />
+  <img src="https://img.shields.io/badge/Google_Gemini-2.5_Flash-4285F4?style=flat-square&logo=google&logoColor=white" />
   <img src="https://img.shields.io/badge/Firebase-Auth-FFCA28?style=flat-square&logo=firebase&logoColor=black" />
-  <img src="https://img.shields.io/badge/SQLAlchemy-SQLite-D71F00?style=flat-square&logo=sqlite&logoColor=white" />
+  <img src="https://img.shields.io/badge/PostgreSQL-Neon-336791?style=flat-square&logo=postgresql&logoColor=white" />
+  <img src="https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square&logo=docker&logoColor=white" />
   <img src="https://img.shields.io/badge/Mapbox-GL-000000?style=flat-square&logo=mapbox&logoColor=white" />
 </p>
 
@@ -82,33 +83,32 @@ VolunteerIQ bridges this gap: upload raw field surveys → Gemini AI extracts ur
 
 ## 🏗️ Architecture
 
+<div align="center">
+
+<img src="architecture.png" alt="VolunteerIQ System Architecture" width="100%" />
+
+</div>
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        FRONTEND (Next.js 14)                     │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌─────────────────┐ │
-│  │ Landing  │  │Dashboard │  │  Tasks   │  │  Volunteers HQ  │ │
-│  │  Page    │  │+ Live Map│  │  + [id]  │  │  + Profile Edit │ │
-│  └──────────┘  └──────────┘  └──────────┘  └─────────────────┘ │
-│  ┌──────────┐  ┌─────────────────────────────────────────────┐  │
-│  │  Upload  │  │         Floating AI Chat Widget             │  │
-│  │ Survey   │  │    (Gemini / Groq — provider toggle)        │  │
-│  └──────────┘  └─────────────────────────────────────────────┘  │
+│                        FRONTEND (Next.js 14)                    │
+│  Landing Page │ Dashboard │ Task Board │ Survey Upload          │
+│  Volunteer Directory │ AI Chat Widget │ Live Map                │
 │          Firebase Auth  │  Mapbox GL  │  Tailwind CSS           │
-└─────────────────────────┼───────────────────────────────────────┘
+└─────────────────────────┼──────────────────────────────────────-┘
                           │  HTTP REST (JSON)
-┌─────────────────────────┼───────────────────────────────────────┐
-│                   BACKEND (FastAPI + Python)                      │
-│  ┌────────────┐ ┌───────────┐ ┌──────────┐ ┌────────────────┐  │
-│  │ /api/auth  │ │/api/tasks │ │/api/chat │ │/api/volunteers │  │
-│  │ /api/upload│ │/api/assign│ │/api/match│ │/api/dashboard  │  │
-│  └────────────┘ └───────────┘ └──────────┘ └────────────────┘  │
+┌─────────────────────────┼──────────────────────────────────────-┐
+│                   BACKEND (FastAPI + Python)                     │
+│  /api/auth  │ /api/tasks  │ /api/chat  │ /api/volunteers        │
+│  /api/upload│ /api/assign │ /api/match │ /api/dashboard         │
 │  ┌──────────────────────────────────────────────────────────┐   │
-│  │              AI Services Layer                            │   │
-│  │   GeminiService (analyze/match/chat) + rate limiter       │   │
-│  │   GroqService   (analyze/match/chat) — fallback           │   │
+│  │  AI Services: Gemini 2.5 Flash (primary) + Groq (fallback)│  │
+│  │  Global Exception Handler │ Request Logger │ CORS         │  │
 │  └──────────────────────────────────────────────────────────┘   │
-│             SQLAlchemy ORM  │  SQLite (→ PostgreSQL prod)        │
-└──────────────────────────────────────────────────────────────────┘
+│        PostgreSQL (Neon Cloud)  │  SQLite (local dev)            │
+└─────────────────────────────────────────────────────────────────┘
+│  Docker │ Gunicorn + Uvicorn │ Render │ Vercel                   │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ### Data Models
@@ -128,44 +128,48 @@ VolunteerIQ bridges this gap: upload raw field surveys → Gemini AI extracts ur
 |---|---|---|
 | **Frontend** | Next.js 14, App Router | Cinematic UI, SSR, routing |
 | **Styling** | Tailwind CSS, shadcn/ui | Premium component system |
-| **Backend** | FastAPI (Python 3.11+) | High-performance REST API |
-| **Primary AI** | Google Gemini 1.5 Pro | Survey analysis, matching, chat |
-| **Fallback AI** | Groq (Llama 3) | Ultra-fast inference fallback |
+| **Backend** | FastAPI (Python 3.12+) | High-performance REST API |
+| **Primary AI** | Google Gemini 2.5 Flash | Survey analysis, matching, chat |
+| **Fallback AI** | Groq (Llama 3.3 70B) | Ultra-fast inference fallback |
 | **Auth** | Firebase Authentication | Google Login, JWT verification |
-| **Database** | SQLite + SQLAlchemy | Local persistence, ORM layer |
+| **Database** | PostgreSQL (Neon) + SQLAlchemy | Cloud-hosted, production-grade |
 | **Geo/Maps** | Mapbox GL, react-map-gl | Live operations visualization |
 | **File Parsing** | pdfplumber, pandas, python-docx | Multi-format survey extraction |
+| **DevOps** | Docker, Gunicorn, docker-compose | Containerized deployment |
 
 ---
 
 ## 🚀 Quick Start
 
-### Option 1: One-Click Launch (Windows)
+### Option 1: Docker (Recommended) 🐳
 
-```powershell
-# From project root — launches both servers
-./start.bat
+```bash
+git clone https://github.com/Anil-Pradhan-web/VolunteerIQ.git
+cd VolunteerIQ
+
+# Setup env files (get keys from team lead)
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env.local
+
+# One command launch
+docker-compose up --build
 ```
 
-Then open: **[http://localhost:3000](http://localhost:3000)**
+Then open: **[http://localhost:3000](http://localhost:3000)** | API Docs: **[http://localhost:8000/docs](http://localhost:8000/docs)**
+
+> 📖 See **[DOCKER_SETUP.md](DOCKER_SETUP.md)** for detailed Docker instructions.
 
 ---
 
-### Option 2: Manual Setup
+### Option 2: One-Click Launch (Windows)
 
-#### Prerequisites
-- Node.js v20+
-- Python v3.11+
-- A free [Gemini API Key](https://aistudio.google.com/apikey)
-- A free [Firebase Project](https://console.firebase.google.com)
-- A free [Mapbox Token](https://account.mapbox.com/) *(optional — map shows placeholder without it)*
-
-#### 1. Clone the Repository
-
-```bash
-git clone https://github.com/Anil-Pradhan-web/SPORTLEX-AI.git
-cd "VOLUNTEER IQ"
+```powershell
+./start.bat
 ```
+
+---
+
+### Option 3: Manual Setup
 
 #### 2. Setup Frontend
 
@@ -266,42 +270,30 @@ VOLUNTEER IQ/
 │   ├── components/
 │   │   ├── auth/ProtectedRoute.tsx   # Auth guard wrapper
 │   │   ├── chat/gemini-chat.tsx      # Floating AI assistant widget
-│   │   ├── common/
-│   │   │   ├── live-map.tsx          # Mapbox operations map (with geo cache)
-│   │   │   ├── stat-card.tsx         # Dashboard metric card
-│   │   │   ├── empty-state.tsx       # Reusable empty state UI
-│   │   │   └── page-header.tsx       # Standardized page headers
-│   │   ├── layout/                   # Sidebar + AppShell
+│   │   ├── common/                   # live-map, stat-card, empty-state, etc.
+│   │   ├── layout/                   # Sidebar + AppShell + Header
 │   │   └── ui/                       # shadcn/ui component library
-│   └── lib/
-│       ├── firebase.ts               # Firebase SDK initialisation
-│       └── auth-context.tsx          # AuthProvider + useAuth() hook
+│   ├── lib/                          # Firebase config + Auth context
+│   ├── Dockerfile                    # Multi-stage Next.js build
+│   └── .dockerignore
 │
 ├── backend/                          # FastAPI Python Intelligence Server
 │   ├── app/
-│   │   ├── config.py                 # Settings from .env
-│   │   ├── database.py               # SQLAlchemy engine + session
+│   │   ├── config.py                 # Centralized settings from .env
+│   │   ├── database.py               # SQLAlchemy engine (SQLite / PostgreSQL)
 │   │   ├── db_models.py              # ORM: User, Task, Assignment, Survey
 │   │   └── models.py                 # Pydantic request/response schemas
-│   ├── routes/
-│   │   ├── auth.py                   # POST /api/auth/verify
-│   │   ├── volunteers.py             # CRUD /api/volunteers
-│   │   ├── tasks.py                  # CRUD /api/tasks
-│   │   ├── assignments.py            # POST /api/assign, /api/unassign
-│   │   ├── dashboard.py              # GET /api/dashboard/{ngo_id}
-│   │   ├── upload.py                 # POST /api/upload-survey + GET /api/surveys
-│   │   ├── match.py                  # POST /api/match-volunteers
-│   │   └── chat.py                   # POST /api/chat
-│   ├── services/
-│   │   ├── gemini.py                 # GeminiService: analyze/match/chat + rate limiter
-│   │   ├── groq_service.py           # GroqService: fallback AI provider
-│   │   ├── db_service.py             # All database CRUD operations
-│   │   └── auth.py                   # Firebase token verification
-│   ├── main.py                       # FastAPI app entry point
-│   ├── seed_demo_data.py             # Demo data seeder
+│   ├── routes/                       # 8 API route modules
+│   ├── services/                     # Gemini, Groq, DB, Auth services
+│   ├── main.py                       # FastAPI app + error handler + logging
+│   ├── seed_demo_data.py             # Demo data seeder (SQLite + PostgreSQL)
+│   ├── Dockerfile                    # Multi-stage Python build
 │   └── requirements.txt
 │
-├── start.bat                         # One-click launch script (Windows)
+├── docker-compose.yml                # One-command full stack launch
+├── DOCKER_SETUP.md                   # Docker setup guide for team
+├── architecture.png                  # System architecture diagram
+├── start.bat                         # Windows one-click launcher
 ├── execution_plan.md                 # Sprint plan & feature tracker
 └── README.md                         # This file
 ```
@@ -354,7 +346,7 @@ Identify community schooling gaps from survey data. Automatically match teachers
 | Google Login (Firebase Auth) | ✅ Complete |
 | Volunteer Profile CRUD | ✅ Complete |
 | Survey Upload (PDF/CSV/DOCX/TXT) | ✅ Complete |
-| AI Survey Analysis (Gemini) | ✅ Complete |
+| AI Survey Analysis (Gemini 2.5) | ✅ Complete |
 | AI Survey Analysis (Groq fallback) | ✅ Complete |
 | Task CRUD + Status Lifecycle | ✅ Complete |
 | AI Volunteer Matching | ✅ Complete |
@@ -363,8 +355,10 @@ Identify community schooling gaps from survey data. Automatically match teachers
 | Live Operations Map (Mapbox) | ✅ Complete |
 | Floating AI Chat Widget | ✅ Complete |
 | Demo Seed Script | ✅ Complete |
-| End-to-End QA Pass | 🔄 In Progress |
-| Production Deployment | ⏳ Pending |
+| Global Error Handling | ✅ Complete |
+| PostgreSQL (Neon Cloud) | ✅ Complete |
+| Docker + docker-compose | ✅ Complete |
+| Production Deployment | 🔄 In Progress |
 | Demo Video Recording | ⏳ Pending |
 
 ---
