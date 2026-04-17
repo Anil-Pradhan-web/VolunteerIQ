@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import {
   MapPin,
   Mail,
@@ -22,8 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+import { buildApiUrl } from "@/lib/api";
 
 const ALL_SKILLS = [
   "Medical",
@@ -46,7 +45,7 @@ const ALL_AVAILABILITY = [
   "Full-time",
 ];
 
-export default function VolunteerProfilePage() {
+function VolunteerProfileContent() {
   const { user, profile, refreshProfile } = useAuth();
   const searchParams = useSearchParams();
   const externalId = searchParams.get("id");
@@ -74,7 +73,7 @@ export default function VolunteerProfilePage() {
       const fetchOtherProfile = async () => {
         setFetchingOther(true);
         try {
-          const res = await fetch(`${API_URL}/api/volunteers/${externalId}`);
+          const res = await fetch(buildApiUrl(`/api/volunteers/${externalId}`));
           if (res.ok) {
             const data = await res.json();
             setOtherProfile(data);
@@ -122,7 +121,7 @@ export default function VolunteerProfilePage() {
     setError("");
     try {
       const token = await user.getIdToken();
-      const res = await fetch(`${API_URL}/api/volunteers/${profile.uid}`, {
+      const res = await fetch(buildApiUrl(`/api/volunteers/${profile.uid}`), {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -384,5 +383,13 @@ export default function VolunteerProfilePage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function VolunteerProfilePage() {
+  return (
+    <Suspense fallback={<div className="py-12 text-sm text-muted-foreground">Loading profile...</div>}>
+      <VolunteerProfileContent />
+    </Suspense>
   );
 }

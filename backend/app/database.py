@@ -16,7 +16,12 @@ DATABASE_URL = settings.database_url
 # SQLite needs check_same_thread=False for FastAPI
 connect_args = {"check_same_thread": False} if "sqlite" in DATABASE_URL else {}
 
-engine = create_engine(DATABASE_URL, connect_args=connect_args, echo=False)
+engine = create_engine(
+    DATABASE_URL,
+    connect_args=connect_args,
+    echo=False,
+    pool_pre_ping=True,
+)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

@@ -26,8 +26,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+import { buildApiUrl } from "@/lib/api";
 
 const SKILLS = [
   "Medical", "First Aid", "Teaching", "Driving", "Logistics",
@@ -70,7 +69,7 @@ export default function TasksPage() {
         const token = await user.getIdToken();
         headers["Authorization"] = `Bearer ${token}`;
       }
-      const res = await fetch(`${API_URL}/api/tasks`, { headers });
+      const res = await fetch(buildApiUrl("/api/tasks"), { headers });
       if (res.ok) {
         const data = await res.json();
         setTasks(Array.isArray(data) ? data : []);
@@ -114,7 +113,7 @@ export default function TasksPage() {
         const token = await user.getIdToken();
         headers["Authorization"] = `Bearer ${token}`;
       }
-      const res = await fetch(`${API_URL}/api/tasks`, {
+      const res = await fetch(buildApiUrl("/api/tasks"), {
         method: "POST",
         headers,
         body: JSON.stringify({
@@ -165,7 +164,7 @@ export default function TasksPage() {
         const token = await user.getIdToken();
         headers["Authorization"] = `Bearer ${token}`;
       }
-      const res = await fetch(`${API_URL}/api/tasks/${taskId}`, {
+      const res = await fetch(buildApiUrl(`/api/tasks/${taskId}`), {
         method: "DELETE",
         headers,
       });

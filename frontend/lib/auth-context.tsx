@@ -16,6 +16,7 @@ import {
   onAuthStateChanged,
   type User,
 } from "@/lib/firebase";
+import { buildApiUrl } from "@/lib/api";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -54,8 +55,6 @@ const AuthContext = createContext<AuthContextType>({
 /*  Provider                                                           */
 /* ------------------------------------------------------------------ */
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -67,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const token = await firebaseUser.getIdToken();
 
-      const res = await fetch(`${API_URL}/api/auth/verify`, {
+      const res = await fetch(buildApiUrl("/api/auth/verify"), {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

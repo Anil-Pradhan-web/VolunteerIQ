@@ -6,8 +6,7 @@ import { useState, useEffect, useRef } from "react";
 
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/lib/auth-context";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+import { buildApiUrl } from "@/lib/api";
 
 // Search suggestions per page context
 const SEARCH_LINKS = [
@@ -75,7 +74,7 @@ export function Header() {
           const token = await user.getIdToken();
           headers["Authorization"] = `Bearer ${token}`;
         }
-        const res = await fetch(`${API_URL}/api/dashboard/default-ngo`, { headers });
+        const res = await fetch(buildApiUrl("/api/dashboard/default-ngo"), { headers });
         if (res.ok) setStats(await res.json());
       } catch (e) {}
     };

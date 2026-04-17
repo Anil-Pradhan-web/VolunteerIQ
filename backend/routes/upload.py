@@ -24,7 +24,7 @@ logger = logging.getLogger("volunteeriq.upload")
 
 router = APIRouter(prefix="/api", tags=["upload"])
 
-UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads")
+UPLOAD_DIR = settings.upload_dir
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 ALLOWED_EXTENSIONS = {"pdf", "csv", "docx", "doc", "txt"}
@@ -157,7 +157,7 @@ async def upload_survey(
         survey = db_service.save_survey(db, {
             "ngoId": ngo_id,
             "fileName": filename,
-            "filePath": file_path,
+            "filePath": f"/uploads/{safe_name}",
             "uploadedBy": "",
             "extractedText": extracted_text,
             "analysisResult": analysis,

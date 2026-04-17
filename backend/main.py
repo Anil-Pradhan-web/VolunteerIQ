@@ -17,6 +17,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
 from app.database import engine
@@ -48,6 +49,7 @@ async def lifespan(app: FastAPI):
     logger.info("✅ Database tables created / verified")
     logger.info(f"🌍 Environment: {settings.app_env}")
     logger.info(f"🔗 CORS origins: {settings.cors_origins}")
+    logger.info(f"Upload directory: {settings.upload_dir}")
     yield
     logger.info("🛑 Application shutting down")
 
@@ -64,10 +66,13 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
+    allow_origin_regex=settings.cors_origin_regex,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.mount("/uploads", StaticFiles(directory=settings.upload_dir), name="uploads")
 
 
 # ── Request Logging Middleware ─────────────────────────────────────────────

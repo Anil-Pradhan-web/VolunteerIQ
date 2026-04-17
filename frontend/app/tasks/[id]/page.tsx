@@ -40,8 +40,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+import { buildApiUrl } from "@/lib/api";
 
 interface Task {
   id: string;
@@ -84,8 +83,8 @@ export default function TaskDetailPage() {
       }
       
       const [tasksRes, volunteersRes] = await Promise.all([
-        fetch(`${API_URL}/api/tasks`, { headers }),
-        fetch(`${API_URL}/api/volunteers`, { headers })
+        fetch(buildApiUrl("/api/tasks"), { headers }),
+        fetch(buildApiUrl("/api/volunteers"), { headers })
       ]);
 
       if (tasksRes.ok) {
@@ -135,11 +134,11 @@ export default function TaskDetailPage() {
       }
       
       // Fetch all volunteers
-      const volRes = await fetch(`${API_URL}/api/volunteers`, { headers });
+      const volRes = await fetch(buildApiUrl("/api/volunteers"), { headers });
       const volunteers = volRes.ok ? await volRes.json() : [];
       
       // Request matches
-      const matchRes = await fetch(`${API_URL}/api/match-volunteers`, {
+      const matchRes = await fetch(buildApiUrl("/api/match-volunteers"), {
         method: "POST",
         headers,
         body: JSON.stringify({ task, volunteers, provider })
@@ -178,7 +177,7 @@ export default function TaskDetailPage() {
         headers["Authorization"] = `Bearer ${token}`;
       }
       
-      const res = await fetch(`${API_URL}/api/assign`, {
+      const res = await fetch(buildApiUrl("/api/assign"), {
         method: "POST",
         headers,
         body: JSON.stringify({ task_id: Number(params.id), volunteer_id: volunteerId })
@@ -210,7 +209,7 @@ export default function TaskDetailPage() {
         headers["Authorization"] = `Bearer ${token}`;
       }
       
-      const res = await fetch(`${API_URL}/api/tasks/${params.id}`, {
+      const res = await fetch(buildApiUrl(`/api/tasks/${params.id}`), {
         method: "PUT",
         headers,
         body: JSON.stringify(editForm)
@@ -241,7 +240,7 @@ export default function TaskDetailPage() {
         headers["Authorization"] = `Bearer ${token}`;
       }
       
-      const res = await fetch(`${API_URL}/api/unassign`, {
+      const res = await fetch(buildApiUrl("/api/unassign"), {
         method: "POST",
         headers,
         body: JSON.stringify({ task_id: Number(params.id), volunteer_id: volunteerId })

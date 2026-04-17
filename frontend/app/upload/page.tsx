@@ -26,8 +26,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select } from "@/components/ui/select";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+import { buildApiUrl } from "@/lib/api";
 
 type UploadStatus = "idle" | "uploading" | "analyzing" | "done" | "error";
 
@@ -113,7 +112,7 @@ export default function UploadPage() {
         headers["Authorization"] = `Bearer ${token}`;
       }
 
-      const res = await fetch(`${API_URL}/api/upload-survey?ngoId=default-ngo&provider=${aiProvider}`, {
+      const res = await fetch(buildApiUrl(`/api/upload-survey?ngoId=default-ngo&provider=${aiProvider}`), {
         method: "POST",
         headers,
         body: formData,
@@ -143,7 +142,7 @@ export default function UploadPage() {
         headers["Authorization"] = `Bearer ${token}`;
       }
 
-      const res = await fetch(`${API_URL}/api/tasks`, {
+      const res = await fetch(buildApiUrl("/api/tasks"), {
         method: "POST",
         headers,
         body: JSON.stringify({

@@ -21,8 +21,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+import { buildApiUrl } from "@/lib/api";
 
 interface Volunteer {
   id: string;
@@ -49,7 +48,7 @@ export default function VolunteersPage() {
           const token = await user.getIdToken();
           headers["Authorization"] = `Bearer ${token}`;
         }
-        const res = await fetch(`${API_URL}/api/volunteers`, { headers });
+        const res = await fetch(buildApiUrl("/api/volunteers"), { headers });
         if (res.ok) {
           const data = await res.json();
           setVolunteers(Array.isArray(data) ? data : []);

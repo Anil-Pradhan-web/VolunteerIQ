@@ -20,6 +20,8 @@ import os
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
+from app.config import settings
+
 _bearer_scheme = HTTPBearer(auto_error=False)
 
 # Try to initialise Firebase Admin SDK for token verification only
@@ -110,6 +112,12 @@ async def get_current_user(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail=f"Invalid token: {exc}",
             )
+
+    if settings.is_production:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Authentication is not configured on the server.",
+        )
 
     # DEV mode — decode token without verification
     if creds and creds.credentials:

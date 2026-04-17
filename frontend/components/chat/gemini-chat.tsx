@@ -14,8 +14,7 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "@/lib/auth-context";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+import { buildApiUrl } from "@/lib/api";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -114,7 +113,7 @@ export function GeminiChat() {
           headers["Authorization"] = `Bearer ${token}`;
         }
 
-        const res = await fetch(`${API_URL}/api/chat`, {
+        const res = await fetch(buildApiUrl("/api/chat"), {
           method: "POST",
           headers,
           body: JSON.stringify({

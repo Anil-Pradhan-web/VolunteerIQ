@@ -23,8 +23,7 @@ import { LiveMap } from "@/components/common/live-map";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+import { buildApiUrl } from "@/lib/api";
 
 interface DashboardStats {
   total_volunteers: number;
@@ -52,7 +51,7 @@ export default function DashboardPage() {
           const token = await user.getIdToken();
           headers["Authorization"] = `Bearer ${token}`;
         }
-        const res = await fetch(`${API_URL}/api/dashboard/default-ngo`, {
+        const res = await fetch(buildApiUrl("/api/dashboard/default-ngo"), {
           headers,
         });
         if (res.ok) {
