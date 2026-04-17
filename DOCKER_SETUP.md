@@ -51,15 +51,6 @@ cp frontend/.env.example frontend/.env.local
 
 Ab `frontend/.env.local` open karo aur yeh values fill karo:
 
-```env
-NEXT_PUBLIC_API_URL=http://localhost:8000
-NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyCVVTIsUcVEIHyQMoC5QUkXqdtGEEA3AZ4
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=volenteeriq.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=volenteeriq
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=volenteeriq.firebasestorage.app
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=1003284858894
-NEXT_PUBLIC_FIREBASE_APP_ID=1:1003284858894:web:ff6fb24244f1a25ebd545f
-```
 
 ### Step 4: Docker se project start karo 🐳
 ```bash
