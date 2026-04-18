@@ -56,18 +56,37 @@ export function LiveMap({ tasks }: { tasks: any[] }) {
             return { ...t, ...cache[searchLocation] };
           }
 
-          try {
-            const res = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchLocation)}.json?access_token=${MAPBOX_TOKEN}&limit=1&country=IN`);
-            const data = await res.json();
-            if (data.features && data.features.length > 0) {
-              const [lng, lat] = data.features[0].center;
-              // Save to cache
-              cache[searchLocation] = { lng, lat };
-              return { ...t, lng, lat };
+          const fetchCoords = async (query: string) => {
+            try {
+              const res = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${MAPBOX_TOKEN}&limit=1&country=IN`);
+              const data = await res.json();
+              if (data.features && data.features.length > 0) {
+                const feature = data.features[0];
+                // If relevance is too low, it might be a generic "India" result
+                if (feature.relevance < 0.8 && query.includes(',')) return null; 
+                
+                return { lng: feature.center[0], lat: feature.center[1] };
+              }
+            } catch (e) {
+              console.error("Geocoding error", e);
             }
-          } catch (e) {
-            console.error("Geocoding error", e);
+            return null;
+          };
+
+          // Attempt 1: Full string
+          let coords = await fetchCoords(searchLocation);
+
+          // Attempt 2: Fallback to first part (e.g. "Koraput" from "Koraput small villages")
+          if (!coords) {
+            const simplified = t.location.split(/[\s,]+/)[0] + ", India";
+            coords = await fetchCoords(simplified);
           }
+
+          if (coords) {
+            cache[searchLocation] = coords;
+            return { ...t, ...coords };
+          }
+
           return t;
         })
       );
