@@ -184,7 +184,7 @@ export default function TaskDetailPage() {
       });
       if (res.ok) {
         setActionMessage("Volunteer assigned successfully.");
-        setMatches(null);
+        // We no longer clear matches here so the user can assign multiple people
         await fetchTaskAndVolunteers(); // refresh task details
       } else {
         setActionError("Failed to assign volunteer. Please try again.");

@@ -98,7 +98,9 @@ Analyze this community survey data and return a JSON object with:
 Survey Data:
 {text[:3000]}
 
-Return ONLY valid JSON with the exact keys above. No extra text."""
+Return ONLY valid JSON with the exact keys above. 
+CRITICAL FOR LOCATION: For the "location" field in "recommendedTasks", ONLY use formal City names or "District, State" names (e.g., "Bhubaneswar, Odisha" or "Khordha, Odisha"). DO NOT hallucinate locations like New Delhi if the data is about Odisha. If you find a colony name like "Salia Sahi", map it to its parent city: "Bhubaneswar".
+No extra text."""
 
         self._rate_limit()
 

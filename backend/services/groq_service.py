@@ -76,6 +76,8 @@ class GroqService:
             "totalResponses": 100
         }}
         
+        CRITICAL FOR LOCATION: For the "location" field, ONLY use formal Indian City names or "District, State" names (e.g., "Bhubaneswar, Odisha"). DO NOT hallucinate locations. If you find a specific neighborhood like "Salia Sahi", use the city "Bhubaneswar".
+        
         Survey Text:
         {text}
         """
